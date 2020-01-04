@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/10.0.2-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sample.ModaleEmailController">
+   <children>
+      <Button fx:id="invio" layoutX="477.0" layoutY="334.0" mnemonicParsing="false" onAction="#invia" text="Invia" />
+      <Button fx:id="annulla" layoutX="531.0" layoutY="334.0" mnemonicParsing="false" onAction="#annulla" text="Annulla" />
+      <TextField fx:id="valueDestinatari" layoutX="86.0" layoutY="41.0" prefHeight="26.0" prefWidth="502.0" />
+      <TextField fx:id="valueOggetto" layoutX="86.0" layoutY="76.0" prefHeight="26.0" prefWidth="502.0" />
+      <TextArea fx:id="valueTestoEmail" layoutX="15.0" layoutY="116.0" prefHeight="200.0" prefWidth="573.0" />
+      <Label fx:id="labelDestinatari" layoutX="15.0" layoutY="45.0" text="Destinatari:" />
+      <Label fx:id="labelOggetto" layoutX="15.0" layoutY="80.0" text="Oggetto:" />
+      <Label fx:id="labelMittente" layoutX="15.0" layoutY="14.0" text="Mittente:" />
+      <Label fx:id="valueMittente" layoutX="86.0" layoutY="14.0" >
+         <font>
+            <Font name="System Bold" size="12.0" />
+         </font>
+      </Label>
+   </children>
+</AnchorPane>
