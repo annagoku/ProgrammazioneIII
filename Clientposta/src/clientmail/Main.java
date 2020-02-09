@@ -1,4 +1,4 @@
-package sample;
+package clientmail;
 
 import javafx.application.Application;
 import javafx.collections.FXCollections;
@@ -7,6 +7,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
+import commons.EMail;
 
 public class Main extends Application {
 
@@ -17,7 +18,7 @@ public class Main extends Application {
         String casella = "diana2013@mymail.com";
 
         BorderPane root= new BorderPane();
-        FXMLLoader listLoader = new FXMLLoader(getClass().getResource("interfacciaclient.fxml"));
+        FXMLLoader listLoader = new FXMLLoader(getClass().getResource("Interfacciaclient.fxml"));
         root.setCenter(listLoader.load());
         MainController tableController = listLoader.getController();
 

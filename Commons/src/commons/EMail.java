@@ -1,4 +1,4 @@
-package sample;
+package commons;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -9,7 +9,7 @@ public class EMail {
     public String destinatario;
     public String oggetto;
     public String testo;
-    LocalDateTime time;
+    public LocalDateTime time;
 
     public EMail(String mitt, String dest, String ogg, String test){
         UUID newid = UUID.randomUUID();

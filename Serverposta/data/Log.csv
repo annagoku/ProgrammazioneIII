@@ -1,0 +1,11 @@
+2020-02-09 16:18:30;Connection from client;;192.168.1.110;
+2020-02-09 16:18:30;Rejecting connection from account not registered;mario.rossi@mail.com;192.168.1.110;
+2020-02-09 16:18:30;Connection closed;mario.rossi@mail.com;192.168.1.110;
+2020-02-09 16:19:25;Connection from client;;192.168.1.110;
+2020-02-09 16:19:25;Account connected successfully;mario.rossi@mymail.com;192.168.1.110;
+2020-02-09 16:19:30;Connection Error (java.util.NoSuchElementException No line found);mario.rossi@mymail.com;192.168.1.110;
+2020-02-09 16:19:30;Connection closed;mario.rossi@mymail.com;192.168.1.110;
+2020-02-09 16:20:34;Connection from client;;192.168.1.110;
+2020-02-09 16:20:34;Account connected successfully;luigi.bianchi@mymail.com;192.168.1.110;
+2020-02-09 16:20:39;Received command (QUIT);luigi.bianchi@mymail.com;192.168.1.110;
+2020-02-09 16:20:39;Connection closed;luigi.bianchi@mymail.com;192.168.1.110;

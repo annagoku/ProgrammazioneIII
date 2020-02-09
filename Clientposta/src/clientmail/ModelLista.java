@@ -1,6 +1,7 @@
-package sample;
+package clientmail;
 
 import javafx.collections.ObservableList;
+import commons.EMail;
 
 public class ModelLista {
     private ObservableList<EMail> lista;

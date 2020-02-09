@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/10.0.2-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="servermail.ServerController">
+   <children>
+      <Button fx:id="connect" layoutX="420.0" layoutY="11.0" mnemonicParsing="false" onAction="#handleconnection" text="Connect" />
+      <Button fx:id="disconnect" layoutX="494.0" layoutY="10.0" mnemonicParsing="false" onAction="#handleclose" prefHeight="27.0" prefWidth="76.0" text="Disconnect" />
+      <Label layoutX="30.0" layoutY="80.0" text="Connection State :">
+         <font>
+            <Font size="14.0" />
+         </font>
+      </Label>
+      <Label layoutX="30.0" layoutY="10.0" text="LOG HYSTORY " AnchorPane.leftAnchor="30.0" AnchorPane.topAnchor="10.0">
+         <font>
+            <Font name="Calibri Bold" size="18.0" />
+         </font>
+      </Label>
+      <TableView fx:id="logHistory" layoutX="140.0" layoutY="121.0" prefHeight="200.0" prefWidth="800.0" AnchorPane.bottomAnchor="50.0" AnchorPane.leftAnchor="30.0" AnchorPane.rightAnchor="30.0" AnchorPane.topAnchor="100.0">
+        <columns>
+          <TableColumn fx:id="date" prefWidth="106.39999771118164" text="Date" />
+          <TableColumn fx:id="message" prefWidth="173.59999084472656" text="Message" />
+            <TableColumn fx:id="client" prefWidth="147.20001220703125" text="Client" />
+            <TableColumn fx:id="ipClient" prefWidth="116.0" text="IP" />
+        </columns>
+      </TableView>
+      <Label fx:id="state" layoutX="151.0" layoutY="80.0" text="Label">
+         <font>
+            <Font size="14.0" />
+         </font>
+      </Label>
+   </children>
+</AnchorPane>

@@ -4,7 +4,7 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
 
-<AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/10.0.2-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sample.ModaleEmailController">
+<AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/10.0.2-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="clientmail.ModaleEmailController">
    <children>
       <Button fx:id="invio" layoutX="477.0" layoutY="334.0" mnemonicParsing="false" onAction="#invia" text="Invia" />
       <Button fx:id="annulla" layoutX="531.0" layoutY="334.0" mnemonicParsing="false" onAction="#annulla" text="Annulla" />
