@@ -107,7 +107,8 @@ public class ServerModel {
     //Caricamento elenco account all'avvio
 
     public void loadAccounts() throws FileNotFoundException, Exception {
-        Scanner rr = new Scanner(new File("./data/accounts.csv"));
+        File f=new File("./data/accounts.csv");
+        Scanner rr = new Scanner(f);
         String s = null;
         while( rr.hasNextLine()) {
             s = rr.nextLine();
@@ -115,7 +116,6 @@ public class ServerModel {
             dr.useDelimiter("\\s*;\\s*");
             accounts.add(new Account(dr.next(), dr.next(), dr.next()));
             dr.close();
-
         }
         rr.close();
         //System.out.println(accounts.toString());

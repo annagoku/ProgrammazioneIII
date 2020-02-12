@@ -11,25 +11,18 @@ import commons.EMail;
 
 public class Main extends Application {
 
-
-
     @Override
     public void start(Stage primaryStage) throws Exception{
-        String casella = "diana2013@mymail.com";
+        String casella = "diana.rossi@mymail.com";
 
         BorderPane root= new BorderPane();
-        FXMLLoader listLoader = new FXMLLoader(getClass().getResource("Interfacciaclient.fxml"));
+        FXMLLoader listLoader = new FXMLLoader(getClass().getResource("ClientGraphicalInterface.fxml"));
         root.setCenter(listLoader.load());
-        MainController tableController = listLoader.getController();
+        MainGuiController mainGuiController = listLoader.getController();
 
-        ObservableList<EMail> list= FXCollections.observableArrayList();
-        list.add(new EMail("july2016@mymail.com", casella,"ciao","prova1"));
-        list.add(new EMail("anna1981@mymail.com", casella, "hello","prova2"));
-        list.add(new EMail("laura1977@mymail.com", casella, "hola","prova3"));
-
-        ModelLista model=new ModelLista(list);
+        ClientModel model=new ClientModel();
         model.setCasella(casella);
-        tableController.initModel(model, primaryStage);
+        mainGuiController.initModel(model, primaryStage);
         primaryStage.setTitle("Client posta "+casella);
         primaryStage.setScene(new Scene(root, 800, 700));
         primaryStage.show();

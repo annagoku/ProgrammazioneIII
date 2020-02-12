@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/10.0.2-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="clientmail.MainGuiController">
+   <children>
+      <Button fx:id="replayMail" layoutX="121.0" layoutY="18.0" mnemonicParsing="false" onAction="#handleAction" prefHeight="38.0" prefWidth="70.0" text="REPLY">
+         <font>
+            <Font name="Calibri Bold" size="14.0" />
+         </font></Button>
+      <Button fx:id="newMail" layoutX="23.0" layoutY="18.0" mnemonicParsing="false" onAction="#handleAction" prefHeight="38.0" prefWidth="70.0" text="NEW">
+         <font>
+            <Font name="Calibri Bold" size="14.0" />
+         </font></Button>
+      <Button fx:id="replayAllMail" layoutX="216.0" layoutY="18.0" mnemonicParsing="false" onAction="#handleAction" prefHeight="38.0" prefWidth="103.0" text="REPLY ALL">
+         <font>
+            <Font name="Calibri Bold" size="14.0" />
+         </font></Button>
+      <Button fx:id="deleteMail" layoutX="459.0" layoutY="18.0" mnemonicParsing="false" prefHeight="38.0" prefWidth="70.0" text="DELETE">
+         <font>
+            <Font name="Calibri Bold" size="14.0" />
+         </font>
+      </Button>
+      <Button fx:id="receiveMail" layoutX="556.0" layoutY="18.0" mnemonicParsing="false" prefHeight="38.0" prefWidth="70.0" text="RECEIVE">
+         <font>
+            <Font name="Calibri Bold" size="14.0" />
+         </font>
+      </Button>
+      <Button fx:id="forwardMail" layoutX="341.0" layoutY="18.0" mnemonicParsing="false" onAction="#handleAction" prefHeight="38.0" prefWidth="93.0" text="FORWARD">
+         <font>
+            <Font name="Calibri Bold" size="14.0" />
+         </font>
+      </Button>
+      <Label fx:id="stateConnection" layoutX="216.0" layoutY="73.0" text="Label">
+         <font>
+            <Font name="Calibri Italic" size="14.0" />
+         </font>
+      </Label>
+      <Label layoutX="24.0" layoutY="70.0" text="CONNECTION STATE :">
+         <font>
+            <Font name="Calibri Bold" size="18.0" />
+         </font>
+      </Label>
+      <Pane fx:id="panelEmailDetail" layoutX="8.0" layoutY="288.0" prefHeight="213.0" prefWidth="780.0" visible="false" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0">
+         <children>
+            <TextArea fx:id="valueTextMail" editable="false" layoutX="11.0" layoutY="94.0" prefHeight="154.0" prefWidth="696.0" />
+            <Label layoutX="11.0" layoutY="18.0" text="Sender:" />
+            <Label layoutX="11.0" layoutY="39.0" text="Rexipients:" />
+            <Label layoutX="11.0" layoutY="66.0" text="Subject:" />
+            <Label fx:id="valueSender" layoutX="90.0" layoutY="18.0" text="Label" />
+            <Label fx:id="valueRecipients" layoutX="90.0" layoutY="39.0" text="Label" />
+            <Label fx:id="valueObject" layoutX="90.0" layoutY="66.0" text="Label">
+               <font>
+                  <Font name="System Bold" size="12.0" />
+               </font>
+            </Label>
+         </children>
+      </Pane>
+      <TabPane layoutX="184.0" layoutY="100.0" prefHeight="240.0" prefWidth="780.0" tabClosingPolicy="UNAVAILABLE" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0">
+        <tabs>
+          <Tab text="Arrived">
+            <content>
+              <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                     <children>
+                        <TableView fx:id="tableArrived" layoutX="159.0" layoutY="-15.0" prefHeight="188.0" prefWidth="770.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="5.0" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="5.0">
+                          <columns>
+                            <TableColumn fx:id="stateMail" minWidth="8.799986839294434" prefWidth="50.40002727508545" text="State" />
+                            <TableColumn fx:id="dateArrived" minWidth="0.0" prefWidth="148.79998779296875" text="Date" />
+                              <TableColumn fx:id="sender" prefWidth="289.59996032714844" text="From" />
+                              <TableColumn fx:id="objectArrived" prefWidth="283.2000732421875" text="Object" />
+                          </columns>
+                        </TableView>
+                     </children>
+                  </AnchorPane>
+            </content>
+          </Tab>
+          <Tab text="Sent">
+            <content>
+              <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                     <children>
+                        <TableView fx:id="tableSent" layoutX="235.0" layoutY="-15.0" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="5.0" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="5.0">
+                          <columns>
+                            <TableColumn fx:id="dateSent" prefWidth="203.80001258850098" text="Date" />
+                            <TableColumn fx:id="recipients" prefWidth="305.8000183105469" text="To" />
+                              <TableColumn fx:id="objectSent" prefWidth="261.2000427246094" text="Object" />
+                          </columns>
+                        </TableView>
+                     </children>
+                  </AnchorPane>
+            </content>
+          </Tab>
+        </tabs>
+      </TabPane>
+      <Label layoutX="14.0" layoutY="349.0" text="PREVIEW">
+         <font>
+            <Font name="System Bold Italic" size="18.0" />
+         </font>
+      </Label>
+      <Button fx:id="openSelec" layoutX="650.0" layoutY="18.0" mnemonicParsing="false" onAction="#openMail" prefHeight="38.0" prefWidth="113.0" text="OPEN SELECTED">
+         <font>
+            <Font name="Calibri Bold" size="14.0" />
+         </font>
+      </Button>
+      <Label fx:id="receivingState" layoutX="679.0" layoutY="73.0" text="Label">
+         <font>
+            <Font name="Calibri Italic" size="14.0" />
+         </font>
+      </Label>
+   </children>
+</AnchorPane>

@@ -9,3 +9,8 @@
 2020-02-09 16:20:34;Account connected successfully;luigi.bianchi@mymail.com;192.168.1.110;
 2020-02-09 16:20:39;Received command (QUIT);luigi.bianchi@mymail.com;192.168.1.110;
 2020-02-09 16:20:39;Connection closed;luigi.bianchi@mymail.com;192.168.1.110;
+2020-02-11 18:03:35;Connection from client;;192.168.1.110;
+2020-02-11 18:03:35;Connection from client;;192.168.1.110;
+2020-02-11 18:04:10;Connection Error (java.net.SocketException Connection reset);;192.168.1.110;
+2020-02-11 18:04:10;Connection Error (java.net.SocketException Connection reset);;192.168.1.110;
+2020-02-11 18:04:10;Connection closed;;192.168.1.110;
