@@ -104,13 +104,14 @@ public class EMail implements Serializable {
 
 
     //Costruttore
-    public EMail(String id, String sender, String recipients, String subject, String text, String time) {
+    public EMail(String id, String time, String sender, String recipients, String subject, String text ) {
         setId (id);
+        setTime(time);
         setSender(sender);
         setRecipients(recipients);
         setSubject(subject);
         setText(text);
-        setTime(time);
+
     }
 
     @Override
@@ -137,7 +138,17 @@ public class EMail implements Serializable {
             return valid;
         }
         return false;
-
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        if (obj!=null && obj instanceof EMail){
+            EMail mail=(EMail) obj;
+            if(this.getId()==mail.getId()){
+                return true;
+            }
+            return false;
+        }
+        return super.equals(obj);
+    }
 }

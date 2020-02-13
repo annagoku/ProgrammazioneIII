@@ -1,5 +1,6 @@
 package clientmail;
 
+import commons.DateUtils;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
@@ -20,8 +21,10 @@ public class ClientModel {
     private ObservableList<EMail> mailArrived= FXCollections.observableArrayList();
     private ObservableList<EMail> mailSent=FXCollections.observableArrayList();
     private String casella;
+    private String timestamp;
     public String host;
     public Socket socket;
+    public final Object lockReceive = new Object();
 
     //Property label connection
     private StringProperty connection=new SimpleStringProperty();
@@ -37,9 +40,15 @@ public class ClientModel {
     }
     //Costruttore model
     public ClientModel (){
-
         this.loadMailArrived();
         this.loadMailSent();
+        if(mailArrived.isEmpty()){
+            timestamp= DateUtils.dateString();
+            new ReceiveDaemonThread(this, timestamp, casella).start();
+        }else{
+            timestamp=(mailArrived.get(mailArrived.size()-1)).getTime();
+            new ReceiveDaemonThread(this, timestamp, casella).start();
+        }
 
     }
 
@@ -62,7 +71,7 @@ public class ClientModel {
     //caricamento all'avvio di mail ricevute e inviate salvate in txt
     public void loadMailArrived()  {
         try{
-            File f=new File("./data/diana_rossi_arrived.csv");
+            File f=new File("./data/dianarossiarrived.csv");
             if (f.length()!=0) {
                 Scanner mailIn = new Scanner(f); //parametrizzare il nome del file
                 while (mailIn.hasNextLine()) {
@@ -73,17 +82,18 @@ public class ClientModel {
                         mailArrived.add(mailA);
                     }
                     l.close();
-                    mailIn.close();
                 }
+            mailIn.close();
             }
-        }catch (IOException e){
+        }catch (Exception e){
             e.printStackTrace();
+            e.getMessage();
         }
     }
 
     public void loadMailSent() {
         try{
-            File f=new File("./data/diana_rossi_sent.csv");
+            File f=new File("./data/dianarossisent.csv");
             if(f.length()!=0) {
                 Scanner mailOut = new Scanner(f); //parametrizzare il nome del file
                 while (mailOut.hasNextLine()) {
@@ -94,9 +104,8 @@ public class ClientModel {
                         mailSent.add(mailS);
                     }
                     l.close();
-                    mailOut.close();
-
                 }
+                mailOut.close();
             }
         }catch (IOException  e){
             e.printStackTrace();

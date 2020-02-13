@@ -1,12 +1,15 @@
 package clientmail;
 
+import commons.DateUtils;
 import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
@@ -87,20 +90,46 @@ public class MainGuiController implements Initializable {
 
     private static DateTimeFormatter DATEFORMAT = DateTimeFormatter.ofPattern("YYYY-MM-dd HH:mm:ss");
 
+    //metodo di inizializzazione model/controller
     public void initModel(ClientModel model, Stage pm) {
         if (this.mail != null) {
             throw new IllegalStateException("Model può essere inizializzato una sola volta");
         }
         this.mail = model;
         this.primaryStage = pm;
-
         //aggancio l'observable list alla tabella
         tableArrived.setItems(model.getMailArrived());
         tableSent.setItems(model.getMailSent());
     }
 
+    //Ricezione mail su evento button Receive
+    @FXML
+    public void handleReceive(){
+        if(mail.getMailArrived().isEmpty()){
+            String timestamp= DateUtils.dateString();
+            new ReceiveDaemonThread(mail, timestamp, mail.getCasella()).start();
+        }else{
+            String timestamp=(mail.getMailArrived().get(mail.getMailArrived().size()-1)).getTime();
+            new ReceiveDaemonThread(mail, timestamp, mail.getCasella()).start();
+        }
+    }
 
-    //gestione click su riga mail arrived
+    //Cancellazione mail da client e Server
+    public void handleDelete() {
+        if (selectedEmail != null){
+            new DeleteThread(mail, mail.getCasella(), selectedEmail).start();
+        }
+    }
+
+    //invio mail
+    public void handleSend(){
+        if(selectedEmail!=null) {
+            new SendThread(mail,selectedEmail,mail.getCasella()).start();
+        }
+    }
+
+
+    //Selezione mail su click su riga arrived/sent
     public void showMailDetails(EMail mail){
         if (mail != null) {
             selectedEmail=mail;
@@ -109,8 +138,6 @@ public class MainGuiController implements Initializable {
             replayAllMail.setDisable(false);
             forwardMail.setDisable(false);
             deleteMail.setDisable(false);
-            openSelec.setDisable(false);
-
             valueSender.setText(mail.getSender());
             valueRecipients.setText(mail.getRecipients());
             valueObject.setText(mail.getSubject());
@@ -118,45 +145,48 @@ public class MainGuiController implements Initializable {
         }
     }
 
+
+    //Apertura nuova finestra per reply/replyall/forward
     @FXML
     public void handleAction(ActionEvent event) throws IOException {
-        //carico la classe fxml
         FXMLLoader loader = new FXMLLoader(getClass().getResource("ModalEmail.fxml"));
-
         loader.load();
         Parent root = loader.getRoot();
         Stage modal_dialog = new Stage(StageStyle.DECORATED);
         modal_dialog.initModality(Modality.WINDOW_MODAL);
         modal_dialog.initOwner(primaryStage);
         Scene scene = new Scene(root);
-        //modal_dialog.setTitle("Nuovo messaggio");
         modal_dialog.setTitle("Client posta "+mail.getCasella());
 
         ModalEmailController mc = (ModalEmailController) loader.getController();
         commandEvent=((Button)event.getSource()).getText();
-        //System.out.println(commandEvent);
         mc.initModel(this.mail,selectedEmail, commandEvent, modal_dialog);
         modal_dialog.setScene(scene);
         modal_dialog.show();
     }
 
+    //Apertura mail con 2-click mouse
     @FXML
-    public void openMail(ActionEvent event) throws IOException {
-        //carico la classe fxml
-        FXMLLoader loaderOpen = new FXMLLoader(getClass().getResource("OpenSelectedEmail.fxml"));
-        loaderOpen.load();
-        Parent root = loaderOpen.getRoot();
-        Stage open_dialog = new Stage(StageStyle.DECORATED);
-        open_dialog.initModality(Modality.WINDOW_MODAL);
-        open_dialog.initOwner(primaryStage);
-        Scene scene = new Scene(root);
-        //open_dialog.setTitle("N");
-        open_dialog.setTitle("Client posta "+mail.getCasella());
-        OpenedEmailController oec = (OpenedEmailController) loaderOpen.getController();
-        oec.initModel(this.mail, selectedEmail, open_dialog);
-        open_dialog.setScene(scene);
-        open_dialog.show();
+    public void handleActionMouse (MouseEvent event)throws IOException{
+        if(event.getClickCount()==2){
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("ModalEmail.fxml"));
+            loader.load();
+            Parent root = loader.getRoot();
+            Stage modal_dialog = new Stage(StageStyle.DECORATED);
+            modal_dialog.initModality(Modality.WINDOW_MODAL);
+            modal_dialog.initOwner(primaryStage);
+            Scene scene = new Scene(root);
+            //modal_dialog.setTitle("Nuovo messaggio");
+            modal_dialog.setTitle("Client posta "+mail.getCasella());
+            ModalEmailController mc = (ModalEmailController) loader.getController();
+            commandEvent="MOUSEEVENT";
+            mc.initModel(this.mail,selectedEmail, commandEvent, modal_dialog);
+            modal_dialog.setScene(scene);
+            modal_dialog.show();
+        }
     }
+
+
 
 
     /*@FXML
@@ -178,7 +208,6 @@ public class MainGuiController implements Initializable {
         tableArrived.setPlaceholder(new Label("No mail to display"));
         tableSent.setPlaceholder(new Label("No mail to display"));
         receivingState.setText("No new mail");
-        //openSelec.setDisable(true);
         replayMail.setDisable(true);
         replayAllMail.setDisable(true);
         deleteMail.setDisable(true);

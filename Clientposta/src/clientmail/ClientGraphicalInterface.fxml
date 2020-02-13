@@ -6,7 +6,7 @@
 
 <AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/10.0.2-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="clientmail.MainGuiController">
    <children>
-      <Button fx:id="replayMail" layoutX="121.0" layoutY="18.0" mnemonicParsing="false" onAction="#handleAction" prefHeight="38.0" prefWidth="70.0" text="REPLY">
+      <Button fx:id="replayMail" layoutX="137.0" layoutY="18.0" mnemonicParsing="false" onAction="#handleAction" prefHeight="38.0" prefWidth="70.0" text="REPLY">
          <font>
             <Font name="Calibri Bold" size="14.0" />
          </font></Button>
@@ -14,21 +14,21 @@
          <font>
             <Font name="Calibri Bold" size="14.0" />
          </font></Button>
-      <Button fx:id="replayAllMail" layoutX="216.0" layoutY="18.0" mnemonicParsing="false" onAction="#handleAction" prefHeight="38.0" prefWidth="103.0" text="REPLY ALL">
+      <Button fx:id="replayAllMail" layoutX="260.0" layoutY="18.0" mnemonicParsing="false" onAction="#handleAction" prefHeight="38.0" prefWidth="103.0" text="REPLY ALL">
          <font>
             <Font name="Calibri Bold" size="14.0" />
          </font></Button>
-      <Button fx:id="deleteMail" layoutX="459.0" layoutY="18.0" mnemonicParsing="false" prefHeight="38.0" prefWidth="70.0" text="DELETE">
+      <Button fx:id="deleteMail" layoutX="573.0" layoutY="18.0" mnemonicParsing="false" onAction="#handleDelete" prefHeight="38.0" prefWidth="70.0" text="DELETE">
          <font>
             <Font name="Calibri Bold" size="14.0" />
          </font>
       </Button>
-      <Button fx:id="receiveMail" layoutX="556.0" layoutY="18.0" mnemonicParsing="false" prefHeight="38.0" prefWidth="70.0" text="RECEIVE">
+      <Button fx:id="receiveMail" layoutX="703.0" layoutY="18.0" mnemonicParsing="false" onAction="#handleReceive" prefHeight="38.0" prefWidth="70.0" text="RECEIVE">
          <font>
             <Font name="Calibri Bold" size="14.0" />
          </font>
       </Button>
-      <Button fx:id="forwardMail" layoutX="341.0" layoutY="18.0" mnemonicParsing="false" onAction="#handleAction" prefHeight="38.0" prefWidth="93.0" text="FORWARD">
+      <Button fx:id="forwardMail" layoutX="420.0" layoutY="18.0" mnemonicParsing="false" onAction="#handleAction" prefHeight="38.0" prefWidth="93.0" text="FORWARD">
          <font>
             <Font name="Calibri Bold" size="14.0" />
          </font>
@@ -64,7 +64,7 @@
             <content>
               <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
                      <children>
-                        <TableView fx:id="tableArrived" layoutX="159.0" layoutY="-15.0" prefHeight="188.0" prefWidth="770.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="5.0" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="5.0">
+                        <TableView fx:id="tableArrived" layoutX="159.0" layoutY="-15.0" onMouseClicked="#handleActionMouse" prefHeight="188.0" prefWidth="770.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="5.0" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="5.0">
                           <columns>
                             <TableColumn fx:id="stateMail" minWidth="8.799986839294434" prefWidth="50.40002727508545" text="State" />
                             <TableColumn fx:id="dateArrived" minWidth="0.0" prefWidth="148.79998779296875" text="Date" />
@@ -98,11 +98,6 @@
             <Font name="System Bold Italic" size="18.0" />
          </font>
       </Label>
-      <Button fx:id="openSelec" layoutX="650.0" layoutY="18.0" mnemonicParsing="false" onAction="#openMail" prefHeight="38.0" prefWidth="113.0" text="OPEN SELECTED">
-         <font>
-            <Font name="Calibri Bold" size="14.0" />
-         </font>
-      </Button>
       <Label fx:id="receivingState" layoutX="679.0" layoutY="73.0" text="Label">
          <font>
             <Font name="Calibri Italic" size="14.0" />
