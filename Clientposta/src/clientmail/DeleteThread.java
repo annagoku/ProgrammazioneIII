@@ -1,6 +1,7 @@
 package clientmail;
 
 import commons.EMail;
+import javafx.collections.ObservableList;
 
 import java.io.*;
 import java.net.InetAddress;
@@ -9,13 +10,17 @@ import java.util.Scanner;
 
 public class DeleteThread extends Thread {
     private EMail mailDelete;
-    private String accountMail;
     private ClientModel model;
+    public enum Selection {ARRIVED, SENT};
 
-    public DeleteThread (ClientModel model, String accountMail, EMail mail){
+    private Selection selection = null;
+
+    public DeleteThread (Selection s, ClientModel model, EMail mail){
+
         this.model=model;
-        this.accountMail=accountMail;
         this.mailDelete=mail;
+        this.selection = s;
+        System.out.println("DeleteThread - rimuovo email "+mail.getId()+ " da "+selection);
     }
 
     public void run() {
@@ -23,8 +28,10 @@ public class DeleteThread extends Thread {
         String host;
         Socket s;
         Boolean found=false;
+        File f = null;
 
             try {
+                System.out.println("DeleteThread - connessione al server...");
                 host = InetAddress.getLocalHost().getHostName();
                 s = new Socket("host", 8089);
                 try {
@@ -34,48 +41,44 @@ public class DeleteThread extends Thread {
                     ObjectInputStream clientObjIn = new ObjectInputStream(in);
                     Scanner clientIn = new Scanner(in);
                     PrintWriter clientPrint = new PrintWriter(out);
-                    File fA = new File("C:\\Users\\annag\\Desktop\\UNITO\\programmazioneIII\\ProgettoProgIII\\Clientposta\\data\\dianarossiarrived.csv");
-                    File fS = new File("C:\\Users\\annag\\Desktop\\UNITO\\programmazioneIII\\ProgettoProgIII\\Clientposta\\data\\dianarossisent.csv");
-                    Scanner fileArrived = new Scanner(fA);
-                    Scanner fileSent = new Scanner(fS);
-                    PrintWriter filePrintArrived = new PrintWriter(fA);
-                    PrintWriter filePrintSent = new PrintWriter(fS);
-
-                    clientPrint.println("accountMail");
+                    // comunico la cancellazione al server
+                    clientPrint.println(model.getCasella());
                     if (clientIn.next().equals("Ready")) {
+                        System.out.println("DeleteThread - connesso. Comunico la cancellazione...");
                         clientPrint.println("Delete");
                         clientObjOut.writeObject(mailDelete);
-
-                        if (model.getMailArrived().contains(mailDelete)) {
-                            synchronized (model.getMailArrived()){
-                                model.getMailArrived().remove(mailDelete);
-                                while (fileArrived.hasNext()&& !found) {
-                                    String line = fileArrived.nextLine();
-                                    Scanner tpm = new Scanner(line);
-                                    if (tpm.next().equals(mailDelete.getId())) {
-                                        found=true;
-                                        filePrintArrived.println("" + System.getProperty("line.separator"));
-                                    }
-                                }
-                            }
-                        }else if (model.getMailSent().contains(mailDelete)) {
-                            synchronized (model.getMailSent()) {
-                                model.getMailSent().remove(mailDelete);
-                                while (fileSent.hasNext() && !found) {
-                                    String line = fileSent.nextLine();
-                                    Scanner tpm = new Scanner(line);
-                                    if (tpm.next().equals(mailDelete.getId())) {
-                                        filePrintSent.println("" + System.getProperty("line.separator"));
-                                    }
-                                }
+                        String res = clientIn.nextLine();
+                        if(res != null && res.equals("Done")) {
+                            switch (selection) {
+                                case ARRIVED:
+                                    removeFromListAndSaveFile(model.getMailArrived(), "./data/"+model.getCasella()+"_arrived.csv", mailDelete);
+                                    break;
+                                case SENT:
+                                    removeFromListAndSaveFile(model.getMailSent(), "./data/"+model.getCasella()+"_sent.csv", mailDelete);
+                                    break;
+                                default:
+                                    throw new RuntimeException("shouldn't be here");
                             }
                         }
+                        else {
+                            //TODO gestire eccezione (il server non ha cancellato la mail)
+                        }
                     }
-                    s.close();
-            } catch (IOException  e) {
+
+            } catch (Exception  e) {
+                    e.printStackTrace();
+                    //TODO gestire meglio le eccezioni
             }
         } catch(IOException e){
+                e.printStackTrace();
         }
     }
 
+    private static void removeFromListAndSaveFile (ObservableList<EMail> list, String filename, EMail selectedEmail) throws Exception {
+        File f = new File(filename);
+        synchronized (list) {
+            list.remove(selectedEmail);
+            ClientModel.saveCsvToFile(list, filename);
+        }
+    }
 }

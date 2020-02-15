@@ -8,10 +8,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import commons.EMail;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
+import java.io.*;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
@@ -39,15 +36,17 @@ public class ClientModel {
         this.connectionProperty().set(d);
     }
     //Costruttore model
-    public ClientModel (){
+    public ClientModel (String c){
+        this.casella = c;
+
         this.loadMailArrived();
         this.loadMailSent();
         if(mailArrived.isEmpty()){
             timestamp= DateUtils.dateString();
-            new ReceiveDaemonThread(this, timestamp, casella).start();
+            new ReceiveDaemonThread(this, timestamp).start();
         }else{
             timestamp=(mailArrived.get(mailArrived.size()-1)).getTime();
-            new ReceiveDaemonThread(this, timestamp, casella).start();
+            new ReceiveDaemonThread(this, timestamp).start();
         }
 
     }
@@ -71,8 +70,8 @@ public class ClientModel {
     //caricamento all'avvio di mail ricevute e inviate salvate in txt
     public void loadMailArrived()  {
         try{
-            File f=new File("./data/dianarossiarrived.csv");
-            if (f.length()!=0) {
+            File f=new File("./data/"+casella+"_arrived.csv");
+            if (f.exists() && f.length()!=0) {
                 Scanner mailIn = new Scanner(f); //parametrizzare il nome del file
                 while (mailIn.hasNextLine()) {
                     String tmp = mailIn.nextLine();
@@ -93,7 +92,7 @@ public class ClientModel {
 
     public void loadMailSent() {
         try{
-            File f=new File("./data/dianarossisent.csv");
+            File f=new File("./data/"+casella+"_sent.csv");
             if(f.length()!=0) {
                 Scanner mailOut = new Scanner(f); //parametrizzare il nome del file
                 while (mailOut.hasNextLine()) {
@@ -112,7 +111,22 @@ public class ClientModel {
         }
     }
 
+    public static void saveCsvToFile(ObservableList<EMail> list, String filename) throws  Exception {
+        if(list != null) {
+            File f = new File (filename);
+            PrintWriter printWriter = new PrintWriter(f);
+            if(list.size() > 0) {
+                for (EMail e: list) {
+                    printWriter.println(e.toString());
+                }
+            }
+            else {
+                printWriter.println("");
+            }
+            printWriter.close();
 
+        }
+    }
 
     public synchronized boolean removeArrivedMail (EMail mail){
         return getMailArrived().remove(mail);
@@ -121,7 +135,7 @@ public class ClientModel {
         return getMailSent().remove(mail);
     }
 
-    }
+}
 
 
 

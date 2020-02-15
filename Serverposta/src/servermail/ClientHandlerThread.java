@@ -2,10 +2,12 @@ package servermail;
 
 import java.io.*;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import commons.Account;
+import commons.EMail;
 
 /*
  Client Handler
@@ -47,7 +49,8 @@ public class ClientHandlerThread extends Thread{
             out = listening.getOutputStream();
             inputLine = new Scanner(in);
             serverAnswer = new PrintWriter(out, true);
-            serverAnswer.println("Ready");
+
+
 
             serverObjOut = new ObjectOutputStream(out);
             serverObjIn = new ObjectInputStream(in);
@@ -55,6 +58,8 @@ public class ClientHandlerThread extends Thread{
             System.out.println(Thread.currentThread().getName()+" ("+ip+") waiting for account: ");
             client= (Account)serverObjIn.readObject();
             email = client.getEmail();
+            File fA = new File("./data/"+client.getEmail()+"_arrived.csv");
+            Scanner fileArrived = new Scanner(fA);
             System.out.println(Thread.currentThread().getName()+" ("+ip+") account: "+client);
 
             if (!model.accounts.contains(client)){
@@ -84,7 +89,10 @@ public class ClientHandlerThread extends Thread{
                                 new Log ("Received command ("+s+")", client.getEmail(),ServerModel.dateToString(), ip  ));
 
                         switch (command){
-                            case "ricevi":
+                            case "receive":
+                                String timestamp=inputLine.nextLine();
+                                ArrayList<EMail> tosend=new ArrayList<>();
+
 
 
                                 break;

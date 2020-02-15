@@ -14,10 +14,9 @@ public class ReceiveDaemonThread extends Thread {
     private String accountMail;
     private ClientModel model;
 
-    public ReceiveDaemonThread (ClientModel model, String time, String a){
+    public ReceiveDaemonThread (ClientModel model, String time){
         this.model=model;
         this.timestamp=time;
-        this.accountMail=a;
         setDaemon(true);
     }
 
@@ -42,9 +41,9 @@ public class ReceiveDaemonThread extends Thread {
                        ObjectInputStream clientObjIn = new ObjectInputStream(in);
                        Scanner clientIn = new Scanner(in);
                        PrintWriter clientPrint = new PrintWriter(out);
-                       PrintWriter filePrint = new PrintWriter(new FileWriter("./data/dianarossiarrived.csv", true));
+                       PrintWriter filePrint = new PrintWriter(new FileWriter(model.getCasella()+"_arrived.csv", true));
 
-                       clientPrint.println("accountMail");
+                       clientPrint.println(model.getCasella());
                        if (clientIn.next().equals("Ready")) {
                            clientPrint.println("Receive");
                            clientPrint.println(timestamp);
@@ -53,7 +52,7 @@ public class ReceiveDaemonThread extends Thread {
                            while (ctr.equals("ongoing")) {
                                mail = (EMail) clientObjIn.readObject();
                                model.getMailArrived().add(mail);
-                               filePrint.write(mail.toString());
+                               filePrint.println(mail.toString());
                                ctr = clientIn.nextLine();
                            }
                            s.close();

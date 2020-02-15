@@ -20,8 +20,8 @@ public class Main extends Application {
         root.setCenter(listLoader.load());
         MainGuiController mainGuiController = listLoader.getController();
 
-        ClientModel model=new ClientModel();
-        model.setCasella(casella);
+        ClientModel model=new ClientModel(casella);
+
         mainGuiController.initModel(model, primaryStage);
         primaryStage.setTitle("Client posta "+casella);
         primaryStage.setScene(new Scene(root, 800, 700));

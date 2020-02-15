@@ -107,24 +107,32 @@ public class MainGuiController implements Initializable {
     public void handleReceive(){
         if(mail.getMailArrived().isEmpty()){
             String timestamp= DateUtils.dateString();
-            new ReceiveDaemonThread(mail, timestamp, mail.getCasella()).start();
+            new ReceiveThread(mail, timestamp).start();
         }else{
             String timestamp=(mail.getMailArrived().get(mail.getMailArrived().size()-1)).getTime();
-            new ReceiveDaemonThread(mail, timestamp, mail.getCasella()).start();
+            new ReceiveThread(mail, timestamp).start();
         }
     }
 
     //Cancellazione mail da client e Server
+    @FXML
     public void handleDelete() {
+        // 0 - arrived, 1 - sent
+        int tabIndex = ((TabPane)tableArrived.getParent().getParent().getParent()).getSelectionModel().getSelectedIndex();
+
         if (selectedEmail != null){
-            new DeleteThread(mail, mail.getCasella(), selectedEmail).start();
+            if(tabIndex == 0)
+                new DeleteThread(DeleteThread.Selection.ARRIVED, mail, selectedEmail).start();
+            else
+                new DeleteThread(DeleteThread.Selection.SENT, mail, selectedEmail).start();
         }
     }
 
     //invio mail
+    @FXML
     public void handleSend(){
         if(selectedEmail!=null) {
-            new SendThread(mail,selectedEmail,mail.getCasella()).start();
+            new SendThread(mail,selectedEmail).start();
         }
     }
 

@@ -13,10 +13,9 @@ public class ReceiveThread extends Thread {
     private ClientModel model;
 
 
-    public ReceiveThread (ClientModel model, String time, String a){
+    public ReceiveThread (ClientModel model, String time){
         this.model=model;
         this.timestamp=time;
-        this.accountMail=a;
     }
 
     public void run() {
@@ -34,24 +33,28 @@ public class ReceiveThread extends Thread {
                         ObjectInputStream clientObjIn = new ObjectInputStream(in);
                         Scanner clientIn = new Scanner(in);
                         PrintWriter clientPrint = new PrintWriter(out);
-                        PrintWriter filePrint = new PrintWriter(new FileWriter("./data/dianarossiarrived.csv", true));
+                        PrintWriter filePrint = new PrintWriter(new FileWriter(model.getCasella()+"_arrived.csv", true));
 
-                        clientPrint.println("accountMail");
+                        clientPrint.println(model.getCasella());
+
                         if (clientIn.next().equals("Ready")) {
                             clientPrint.println("Receive");
                             clientPrint.println(timestamp);
 
                             String ctr = "ongoing";
-                            while (ctr.equals("ongoing")) {
-                                mail = (EMail) clientObjIn.readObject();
-                                model.getMailArrived().add(mail);
-                                filePrint.write(mail.toString());
-                                ctr = clientIn.nextLine();
+                            synchronized (model.getMailArrived()) {
+                                while (ctr.equals("ongoing")) {
+                                    mail = (EMail) clientObjIn.readObject();
+                                    model.getMailArrived().add(mail);
+                                    filePrint.println(mail.toString());
+                                    ctr = clientIn.nextLine();
+                                }
+                                ClientModel.saveCsvToFile(model.getMailArrived(), "./data/"+model.getCasella()+"_arrived.csv");
                             }
                             s.close();
                         }
 
-                    } catch (IOException | ClassNotFoundException e) {
+                    } catch (Exception e) {
                         e.printStackTrace();
                     }
                 } catch (IOException e) {

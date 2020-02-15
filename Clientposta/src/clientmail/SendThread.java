@@ -9,14 +9,13 @@ import java.util.Scanner;
 
 public class SendThread extends Thread {
     private EMail mailSend;
-    private String accountMail;
     private ClientModel model;
 
 
-    public SendThread(ClientModel model, EMail m, String a) {
+    public SendThread(ClientModel model, EMail m) {
         this.model = model;
         this.mailSend = m;
-        this.accountMail = a;
+
     }
 
 
@@ -34,21 +33,32 @@ public class SendThread extends Thread {
                 ObjectInputStream clientObjIn = new ObjectInputStream(in);
                 Scanner clientIn = new Scanner(in);
                 PrintWriter clientPrint = new PrintWriter(out);
-                PrintWriter filePrint = new PrintWriter(new FileWriter("C:\\Users\\annag\\Desktop\\UNITO\\programmazioneIII\\ProgettoProgIII\\Clientposta\\data\\dianarossisent.csv", true));
 
-                clientPrint.println("accountMail");
+                clientPrint.println(model.getCasella());
                 if (clientIn.next().equals("Ready")) {
                     clientPrint.println("Send");
                     clientObjOut.writeObject(mailSend);
-                    synchronized (model.getMailSent()) {
-                        model.getMailSent().add(mailSend);
+
+                    String res = clientIn.nextLine();
+                    if(res != null && res.equals("Done")) {
+                        synchronized (model.getMailSent()) {
+                            model.getMailSent().add(mailSend);
+                            ClientModel.saveCsvToFile(model.getMailSent(), "./data/"+model.getCasella()+"_sent.csv");
+                        }
+
                     }
-                    filePrint.println(mailSend.toString());
+                    else {
+                        //TODO gestire eccezione (il server non ha mandato la mail)
+
+                    }
+
                 }
                 s.close();
-            } catch (IOException e) {
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 }

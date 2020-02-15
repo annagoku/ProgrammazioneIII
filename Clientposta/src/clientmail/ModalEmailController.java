@@ -12,6 +12,7 @@ import javafx.stage.Stage;
 import commons.EMail;
 
 import java.net.URL;
+import java.util.Date;
 import java.util.ResourceBundle;
 import java.util.UUID;
 
@@ -119,12 +120,11 @@ public class ModalEmailController implements Initializable {
     @FXML
     public void send(ActionEvent event){
 
-        EMail email = new EMail(model.getCasella()+ UUID.randomUUID().toString(),
+        EMail email = new EMail("", DateUtils.dateString(),
                 model.getCasella(),
                 valueRecipients.getText(),
                 valueObject.getText(),
-                valueText.getText(),
-                DateUtils.dateString());
+                valueText.getText());
 
         //TODO aggiungere logica per inviare la mail
 
