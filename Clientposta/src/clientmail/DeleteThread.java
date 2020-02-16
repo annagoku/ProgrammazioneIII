@@ -1,6 +1,7 @@
 package clientmail;
 
 import commons.EMail;
+import commons.Utilities;
 import javafx.collections.ObservableList;
 
 import java.io.*;
@@ -33,7 +34,7 @@ public class DeleteThread extends Thread {
             try {
                 System.out.println("DeleteThread - connessione al server...");
                 host = InetAddress.getLocalHost().getHostName();
-                s = new Socket("host", 8089);
+                s = new Socket(model.host, model.port);
                 try {
                     OutputStream out = s.getOutputStream();
                     InputStream in = s.getInputStream();
@@ -42,7 +43,7 @@ public class DeleteThread extends Thread {
                     Scanner clientIn = new Scanner(in);
                     PrintWriter clientPrint = new PrintWriter(out);
                     // comunico la cancellazione al server
-                    clientPrint.println(model.getCasella());
+                    clientObjOut.writeObject(model.getAccount());
                     if (clientIn.next().equals("Ready")) {
                         System.out.println("DeleteThread - connesso. Comunico la cancellazione...");
                         clientPrint.println("Delete");
@@ -78,7 +79,7 @@ public class DeleteThread extends Thread {
         File f = new File(filename);
         synchronized (list) {
             list.remove(selectedEmail);
-            ClientModel.saveCsvToFile(list, filename);
+            Utilities.saveEmailCsvToFile(list, filename);
         }
     }
 }

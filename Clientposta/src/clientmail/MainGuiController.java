@@ -1,8 +1,7 @@
 package clientmail;
 
-import commons.DateUtils;
+import commons.Utilities;
 import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -105,13 +104,8 @@ public class MainGuiController implements Initializable {
     //Ricezione mail su evento button Receive
     @FXML
     public void handleReceive(){
-        if(mail.getMailArrived().isEmpty()){
-            String timestamp= DateUtils.dateString();
-            new ReceiveThread(mail, timestamp).start();
-        }else{
-            String timestamp=(mail.getMailArrived().get(mail.getMailArrived().size()-1)).getTime();
-            new ReceiveThread(mail, timestamp).start();
-        }
+        new ReceiveThread(mail, false).start();
+
     }
 
     //Cancellazione mail da client e Server

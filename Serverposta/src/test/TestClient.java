@@ -51,6 +51,9 @@ public class TestClient {
                                 f = Phases.RICEVI;
                                 stop = true;
                                 break;
+                            case RICEVI:
+                                print.println("Ricevi");
+                                break;
                             default:
                                 stop = true;
                                 break;

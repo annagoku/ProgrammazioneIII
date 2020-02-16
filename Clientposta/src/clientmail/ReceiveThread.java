@@ -1,66 +1,94 @@
 package clientmail;
 
 import commons.EMail;
+import commons.Utilities;
 
 import java.io.*;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.util.List;
 import java.util.Scanner;
 
 public class ReceiveThread extends Thread {
-    private String timestamp;
-    private String accountMail;
     private ClientModel model;
+    private boolean demon;
 
+    private String prefixLog = getClass().getName();
 
-    public ReceiveThread (ClientModel model, String time){
+    public ReceiveThread (ClientModel model, boolean demon){
         this.model=model;
-        this.timestamp=time;
+        this.demon = demon;
+        if(demon)
+            prefixLog+="(demon)";
     }
 
     public void run() {
-        EMail mail;
-        String host;
-        Socket s;
-            synchronized (model.lockReceive) {
+        if(demon) {
+            while(true) {
                 try {
-                    host = InetAddress.getLocalHost().getHostName();
-                    s = new Socket("host", 8089);
-                    try {
-                        OutputStream out = s.getOutputStream();
-                        InputStream in = s.getInputStream();
-                        ObjectOutputStream clientObjOut = new ObjectOutputStream(out);
-                        ObjectInputStream clientObjIn = new ObjectInputStream(in);
-                        Scanner clientIn = new Scanner(in);
-                        PrintWriter clientPrint = new PrintWriter(out);
-                        PrintWriter filePrint = new PrintWriter(new FileWriter(model.getCasella()+"_arrived.csv", true));
+                    Thread.sleep(20000);
+                } catch (InterruptedException e) {
+                }
+                receiveLogic();
+            }
+        }
+        else {
+            receiveLogic();
+        }
+    }
 
-                        clientPrint.println(model.getCasella());
 
-                        if (clientIn.next().equals("Ready")) {
-                            clientPrint.println("Receive");
-                            clientPrint.println(timestamp);
+    private void receiveLogic() {
 
-                            String ctr = "ongoing";
-                            synchronized (model.getMailArrived()) {
-                                while (ctr.equals("ongoing")) {
-                                    mail = (EMail) clientObjIn.readObject();
-                                    model.getMailArrived().add(mail);
-                                    filePrint.println(mail.toString());
-                                    ctr = clientIn.nextLine();
-                                }
-                                ClientModel.saveCsvToFile(model.getMailArrived(), "./data/"+model.getCasella()+"_arrived.csv");
-                            }
-                            s.close();
+        synchronized (model.lockReceive) {
+            Socket s = null;
+            try {
+                s = new Socket(model.host, model.port);
+                try {
+                    OutputStream out = s.getOutputStream();
+                    InputStream in = s.getInputStream();
+                    ObjectOutputStream clientObjOut = new ObjectOutputStream(out);
+                    ObjectInputStream clientObjIn = new ObjectInputStream(in);
+                    Scanner clientIn = new Scanner(in);
+                    PrintWriter clientPrint = new PrintWriter(out, true);
+
+                    clientObjOut.writeObject(model.getAccount());
+                    String serverAnswer = clientIn.nextLine();
+                    System.out.println(prefixLog+": Server says "+serverAnswer);
+
+                    if (serverAnswer.equals("Ready")) {
+                        String timestamp = "";
+                        if(!model.getMailArrived().isEmpty()){
+                            timestamp=(model.getMailArrived().get(model.getMailArrived().size()-1)).getTime();
+
                         }
+                        clientPrint.println("Receive "+timestamp);
+                        serverAnswer = clientIn.nextLine();
+                        System.out.println(prefixLog+": server answer -> "+serverAnswer);
+                        if(serverAnswer.equals("Done")) {
+                            synchronized (model.getMailArrived()) {
+                                List<EMail> list = (List<EMail>) clientObjIn.readObject();
+                                model.getMailArrived().addAll(list);
 
-                    } catch (Exception e) {
-                        e.printStackTrace();
+                                Utilities.saveEmailCsvToFile(model.getMailArrived(), "./data/"+model.getCasella()+"_arrived.csv");
+                            }
+                        }
+                        else {
+                            System.out.println(prefixLog+": error on receiving. Server says "+serverAnswer);
+                        }
+                        clientPrint.println("Quit");
+
+                        s.close();
                     }
-                } catch (IOException e) {
+
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
+            } catch (IOException e) {
+                e.printStackTrace();
             }
+        }
+
     }
 }
 

@@ -9,6 +9,10 @@ import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
 import commons.EMail;
 
+import java.io.FileInputStream;
+import java.io.FileReader;
+import java.util.Properties;
+
 public class Main extends Application {
 
     @Override
@@ -20,7 +24,11 @@ public class Main extends Application {
         root.setCenter(listLoader.load());
         MainGuiController mainGuiController = listLoader.getController();
 
-        ClientModel model=new ClientModel(casella);
+
+        Properties props = new Properties();
+        props.load(new FileInputStream("./data/config.properties"));
+
+        ClientModel model=new ClientModel(props);
 
         mainGuiController.initModel(model, primaryStage);
         primaryStage.setTitle("Client posta "+casella);

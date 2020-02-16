@@ -3,11 +3,13 @@ package servermail;
 import java.io.*;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import commons.Account;
 import commons.EMail;
+import commons.Utilities;
 
 /*
  Client Handler
@@ -50,16 +52,12 @@ public class ClientHandlerThread extends Thread{
             inputLine = new Scanner(in);
             serverAnswer = new PrintWriter(out, true);
 
-
-
             serverObjOut = new ObjectOutputStream(out);
             serverObjIn = new ObjectInputStream(in);
 
             System.out.println(Thread.currentThread().getName()+" ("+ip+") waiting for account: ");
             client= (Account)serverObjIn.readObject();
             email = client.getEmail();
-            File fA = new File("./data/"+client.getEmail()+"_arrived.csv");
-            Scanner fileArrived = new Scanner(fA);
             System.out.println(Thread.currentThread().getName()+" ("+ip+") account: "+client);
 
             if (!model.accounts.contains(client)){
@@ -71,6 +69,8 @@ public class ClientHandlerThread extends Thread{
             }else{
                 model.logHistory.add(
                         new Log ("Account connected successfully", client.getEmail(),ServerModel.dateToString(), ip  ));
+
+
                 serverAnswer.println("Ready");
 
 
@@ -90,8 +90,23 @@ public class ClientHandlerThread extends Thread{
 
                         switch (command){
                             case "receive":
-                                String timestamp=inputLine.nextLine();
-                                ArrayList<EMail> tosend=new ArrayList<>();
+                                String timestamp=param;
+                                List<EMail> tosend=new ArrayList<>();
+
+
+                                try {
+                                    if("".equals(param))
+                                        tosend = Utilities.loadMailFromCSV("./data/"+client.getEmail()+"/"+client.getEmail()+"_arrived.csv");
+                                    else
+                                        tosend = Utilities.loadMailFromCSVTimestamp("./data/"+client.getEmail()+"/"+client.getEmail()+"_arrived.csv", timestamp);
+
+                                    serverAnswer.println("Done");
+                                    System.out.println(Thread.currentThread().getName()+" ("+ip+") sending: "+tosend);
+                                    serverObjOut.writeObject(tosend);
+                                }
+                                catch (Exception e) {
+                                    serverAnswer.println("Error: "+e.getMessage());
+                                }
 
 
 

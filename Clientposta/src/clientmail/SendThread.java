@@ -1,6 +1,7 @@
 package clientmail;
 
 import commons.EMail;
+import commons.Utilities;
 
 import java.io.*;
 import java.net.InetAddress;
@@ -25,7 +26,7 @@ public class SendThread extends Thread {
 
         try {
             host = InetAddress.getLocalHost().getHostName();
-            s = new Socket("host", 8089);
+            s = new Socket(model.host, model.port);
             try {
                 OutputStream out = s.getOutputStream();
                 InputStream in = s.getInputStream();
@@ -34,7 +35,7 @@ public class SendThread extends Thread {
                 Scanner clientIn = new Scanner(in);
                 PrintWriter clientPrint = new PrintWriter(out);
 
-                clientPrint.println(model.getCasella());
+                clientObjOut.writeObject(model.getAccount());
                 if (clientIn.next().equals("Ready")) {
                     clientPrint.println("Send");
                     clientObjOut.writeObject(mailSend);
@@ -43,7 +44,7 @@ public class SendThread extends Thread {
                     if(res != null && res.equals("Done")) {
                         synchronized (model.getMailSent()) {
                             model.getMailSent().add(mailSend);
-                            ClientModel.saveCsvToFile(model.getMailSent(), "./data/"+model.getCasella()+"_sent.csv");
+                            Utilities.saveEmailCsvToFile(model.getMailSent(), "./data/"+model.getCasella()+"_sent.csv");
                         }
 
                     }

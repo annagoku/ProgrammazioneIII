@@ -1,6 +1,6 @@
 package clientmail;
 
-import commons.DateUtils;
+import commons.Utilities;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -12,9 +12,7 @@ import javafx.stage.Stage;
 import commons.EMail;
 
 import java.net.URL;
-import java.util.Date;
 import java.util.ResourceBundle;
-import java.util.UUID;
 
 
 public class ModalEmailController implements Initializable {
@@ -47,7 +45,7 @@ public class ModalEmailController implements Initializable {
                 valueSender.setText(model.getCasella());
                 valueSender.setDisable(true);
                 valueSender.setStyle("-fx-opacity: 1;");
-                date.setText(DateUtils.dateString());
+                date.setText(Utilities.dateString());
                 break;
             case "REPLY":
                 if(mail!=null){
@@ -56,7 +54,7 @@ public class ModalEmailController implements Initializable {
                     valueSender.setDisable(true);
                     valueSender.setStyle("-fx-opacity: 1;");
                     valueObject.setText(("R: ".concat(mailsel.getSubject())));
-                    date.setText(DateUtils.dateString());
+                    date.setText(Utilities.dateString());
                     valueRecipients.setText(mailsel.getSender());
                     String tmp=("\n"+"\n"+"From: "+mailsel.getSender()+ "\n" +"Sent: "+mailsel.getTime() +"\n"+"To: "+mailsel.getRecipients()+"\n"+
                             "Subject: "+ mailsel.getSubject());
@@ -70,7 +68,7 @@ public class ModalEmailController implements Initializable {
                     valueSender.setDisable(true);
                     valueSender.setStyle("-fx-opacity: 1;");
                     valueObject.setText(("R: ".concat(mailsel.getSubject())));
-                    date.setText(DateUtils.dateString());
+                    date.setText(Utilities.dateString());
                     valueRecipients.setText(mailsel.getSender().concat("; "+mailsel.getRecipients()));
                     String tmp=("\n"+"\n"+"From: "+mailsel.getSender()+ "\n" +"Sent: "+mailsel.getTime() +"\n"+"To: "+mailsel.getRecipients()+"\n"+
                             "Subject: "+ mailsel.getSubject());
@@ -84,7 +82,7 @@ public class ModalEmailController implements Initializable {
                     valueSender.setDisable(true);
                     valueSender.setStyle("-fx-opacity: 1;");
                     valueObject.setText(("F: ".concat(mailsel.getSubject())));
-                    date.setText(DateUtils.dateString());
+                    date.setText(Utilities.dateString());
                     valueRecipients.setText("");
                     String tmp=("\n"+"\n"+"From: "+mailsel.getSender()+ "\n" +"Sent: "+mailsel.getTime() +"\n"+"To: "+mailsel.getRecipients()+"\n"+
                             "Subject: "+ mailsel.getSubject());
@@ -120,7 +118,7 @@ public class ModalEmailController implements Initializable {
     @FXML
     public void send(ActionEvent event){
 
-        EMail email = new EMail("", DateUtils.dateString(),
+        EMail email = new EMail("", Utilities.dateString(),
                 model.getCasella(),
                 valueRecipients.getText(),
                 valueObject.getText(),
