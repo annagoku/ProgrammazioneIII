@@ -98,7 +98,7 @@
             <Font name="System Bold Italic" size="18.0" />
          </font>
       </Label>
-      <Label fx:id="receivingState" layoutX="679.0" layoutY="73.0" text="Label">
+      <Label fx:id="countNewMail" layoutX="679.0" layoutY="73.0" text="-">
          <font>
             <Font name="Calibri Italic" size="14.0" />
          </font>

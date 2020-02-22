@@ -21,13 +21,14 @@ public class ClientModel {
     private String timestamp;
     public String host;
     public int port;
+    public int count; // contatore nuove mail
+
 
     public Socket socket;
     public final Object lockReceive = new Object();
 
     //Property label connection
     private StringProperty connection=new SimpleStringProperty();
-
     public StringProperty connectionProperty() {
         return this.connection;
     }
@@ -37,16 +38,27 @@ public class ClientModel {
     public  void setConnection (String d) {
         this.connectionProperty().set(d);
     }
+
+    //Property label contatore nuove mail
+    private StringProperty countNewMail=new SimpleStringProperty("no new mail");
+    public StringProperty countNewMailProperty() {
+        return this.countNewMail;
+    }
+    public String getCountNewMail() {
+        return this.countNewMailProperty().get();
+    }
+    public  void setCountNewMail (String d) {
+        this.countNewMailProperty().set(d);
+    }
+
+
     //Costruttore model
     public ClientModel (Properties props){
         //carico le properties e inizializzo
-
         this.props = props;
-
         //leggo l'account
-
+        setCountNewMail("No new mail");
         this.casella = new Account(props.getProperty("account.name"),props.getProperty("account.surname"),props.getProperty("account.email"));
-
         this.host = props.getProperty("server.host");
         this.port = Integer.valueOf(props.getProperty("server.port"));
 

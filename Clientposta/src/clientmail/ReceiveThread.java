@@ -2,6 +2,8 @@ package clientmail;
 
 import commons.EMail;
 import commons.Utilities;
+import javafx.application.Platform;
+import javafx.scene.control.Alert;
 
 import java.io.*;
 import java.net.InetAddress;
@@ -41,6 +43,17 @@ public class ReceiveThread extends Thread {
     private void receiveLogic() {
 
         synchronized (model.lockReceive) {
+            Platform.runLater(
+                    () -> {
+                        model.setCountNewMail("Loading mail from server....");
+                        try{
+                            sleep(4000);
+                        }catch (InterruptedException e){
+                            e.printStackTrace();
+                        }
+                    }
+            );
+
             Socket s = null;
             try {
                 s = new Socket(model.host, model.port);
@@ -68,6 +81,25 @@ public class ReceiveThread extends Thread {
                         if(serverAnswer.equals("Done")) {
                             synchronized (model.getMailArrived()) {
                                 List<EMail> list = (List<EMail>) clientObjIn.readObject();
+                                if(list.size()!=0){
+                                   Platform.runLater(
+                                           () -> {
+                                                model.setCountNewMail(Integer.toString(list.size()));
+                                                Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                                                alert.setContentText("Ci sono "+list.size()+" nuove mail");
+                                                alert.show();
+                                           }
+                                    );
+
+
+                                }else {
+                                    Platform.runLater(
+                                            () -> {
+                                                model.setCountNewMail("No new mail");
+
+                                          }
+                                    );
+                                }
                                 model.getMailArrived().addAll(list);
 
                                 Utilities.saveEmailCsvToFile(model.getMailArrived(), "./data/"+model.getCasella()+"_arrived.csv");

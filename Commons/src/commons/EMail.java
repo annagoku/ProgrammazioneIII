@@ -120,7 +120,7 @@ public class EMail implements Serializable {
 
     @Override
     public String toString() {
-        return getId()+";"+ getTime()+";"+getSender()+";"+getRecipients()+";"+ getSubject()+";"+getText();
+        return getId()+";"+ getTime()+";"+getSender()+";"+getRecipients()+";"+ getSubject()+";"+Utilities.escapeText(getText());
     }
 
     /**

@@ -1,16 +1,20 @@
 package clientmail;
 
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
 import commons.EMail;
+import javafx.stage.WindowEvent;
 
 import java.io.FileInputStream;
 import java.io.FileReader;
+import java.io.IOException;
 import java.util.Properties;
 
 public class Main extends Application {
@@ -26,7 +30,7 @@ public class Main extends Application {
 
 
         Properties props = new Properties();
-        props.load(new FileInputStream("./data/config.properties"));
+        props.load(new FileInputStream(("./data/config.properties")));
 
         ClientModel model=new ClientModel(props);
 
@@ -34,6 +38,11 @@ public class Main extends Application {
         primaryStage.setTitle("Client posta "+casella);
         primaryStage.setScene(new Scene(root, 800, 700));
         primaryStage.show();
+
+
+
+
+
     }
 
 

@@ -16,6 +16,9 @@ import commons.Utilities;
  */
 public class ClientHandlerThread extends Thread{
 
+    // i comandi da dare al server sono fatti da una parola + uno o piu' spazi + un eventuale parametro
+    // questo pattern controlla questo formato e raggruppa in modo che il primo gruppo sia il comando
+    // e il secondo gruppo sia l'eventuale parametro
     private static Pattern pattern = Pattern.compile("(\\w+)\\s*(.*)");
 
     private String ip;
@@ -60,7 +63,9 @@ public class ClientHandlerThread extends Thread{
             email = client.getEmail();
             System.out.println(Thread.currentThread().getName()+" ("+ip+") account: "+client);
 
-            if (!model.accounts.contains(client)){
+            Account localAccount = model.accounts.get(email);
+
+            if (localAccount == null){
                 serverAnswer.println("Account not registered");
                 Log log_1= new Log ("Rejecting connection from account not registered", client.getEmail(),ServerModel.dateToString(), ip  );
                 model.logHistory.add(log_1);
@@ -91,37 +96,103 @@ public class ClientHandlerThread extends Thread{
                         switch (command){
                             case "receive":
                                 String timestamp=param;
-                                List<EMail> tosend=new ArrayList<>();
-
-
+                                List<EMail> arrived=new ArrayList<>();
                                 try {
                                     if("".equals(param))
-                                        tosend = Utilities.loadMailFromCSV("./data/"+client.getEmail()+"/"+client.getEmail()+"_arrived.csv");
+                                        arrived = Utilities.loadMailFromCSV("./data/"+client.getEmail()+"/"+client.getEmail()+"_arrived.csv");
                                     else
-                                        tosend = Utilities.loadMailFromCSVTimestamp("./data/"+client.getEmail()+"/"+client.getEmail()+"_arrived.csv", timestamp);
+                                        arrived = Utilities.loadMailFromCSVTimestamp("./data/"+client.getEmail()+"/"+client.getEmail()+"_arrived.csv", timestamp);
 
                                     serverAnswer.println("Done");
-                                    System.out.println(Thread.currentThread().getName()+" ("+ip+") sending: "+tosend);
-                                    serverObjOut.writeObject(tosend);
+                                    System.out.println(Thread.currentThread().getName()+" ("+ip+") sending: "+arrived);
+                                    serverObjOut.writeObject(arrived);
                                 }
                                 catch (Exception e) {
                                     serverAnswer.println("Error: "+e.getMessage());
                                 }
-
-
-
                                 break;
-                            case "invio":
+                            case "send":
+                                EMail mailToSend;
+                                String receiver;
+                                String tpm;
+                                PrintWriter saveMailArrived;
+
+                                try{
+                                    mailToSend=(EMail)serverObjIn.readObject();
+                                    tpm=mailToSend.getRecipients();
+                                    Scanner l =new Scanner(tpm).useDelimiter(("\\s*,\\s*"));
+                                    String mailID = model.nextId();
+                                    serverAnswer.println("Done "+mailID);
+
+                                    while (l.hasNext()){
+                                        receiver=l.next();
+                                        Account receiverAccount = model.accounts.get(receiver);
+                                        if (receiverAccount != null){
+                                            mailToSend.setId(mailID);
+                                            receiverAccount.getWriteFileArrived().lock();
+                                            saveMailArrived = new PrintWriter(new FileWriter("./data/"+receiver+"/"+receiver+"_arrived.csv", true), true);
+                                            saveMailArrived.println(mailToSend.toString());
+                                            receiverAccount.getWriteFileArrived().lock();
+                                        }else{
+                                            String textReply= "Receiver does not exist";
+                                            EMail errorReply = new EMail(mailID, Utilities.dateString(), ServerModel.MAIL_SERVER, mailToSend.getSender(), "Message not delivered", textReply + "\n\n\n"+mailToSend.getText());
+                                            localAccount.getWriteFileArrived().lock();
+                                            saveMailArrived = new PrintWriter(new FileWriter("./data/"+localAccount.getEmail()+"/"+localAccount.getEmail()+"_arrived.csv", true), true);
+                                            saveMailArrived.println(errorReply.toString());
+                                            localAccount.getWriteFileArrived().unlock();
+                                        }
+                                    }
+                                }catch (Exception e) {
+                                    serverAnswer.println("Error: "+e.getMessage());
+                                }
                                 break;
 
-                            case "elimina":
+                            case "delete":
+                                EMail mailToDelete;
+                                List<EMail> list=new ArrayList<>();
+                                String selection = param.toUpperCase();
+                                System.out.println(Thread.currentThread().getName()+" ("+ip+") delete selection: "+selection);
+                                try{
+                                    mailToDelete=(EMail) serverObjIn.readObject();
+                                    System.out.println(Thread.currentThread().getName()+" ("+ip+") mail to delete: "+mailToDelete.getId());
+
+                                    switch (selection){
+                                        case "ARRIVED":
+                                            localAccount.getWriteFileArrived().lock();
+                                            System.out.println(Thread.currentThread().getName()+" ("+ip+") locked file arrived: "+localAccount.getEmail());
+
+                                            list=Utilities.loadMailFromCSV("./data/"+client.getEmail()+"/"+client.getEmail()+"_arrived.csv");
+                                            Utilities.removeFromListAndSaveFile(list,"./data/"+client.getEmail()+"/"+client.getEmail()+"_arrived.csv" , mailToDelete);
+                                            localAccount.getWriteFileArrived().unlock();
+                                            break;
+                                        case "SENT":
+                                            localAccount.getWriteFileSent().lock();
+                                            File fs=new File("./data/"+client.getEmail()+"/"+client.getEmail()+"_sent.csv");
+                                            list=Utilities.loadMailFromCSV("./data/"+client.getEmail()+"/"+client.getEmail()+"_sent.csv");
+                                            Utilities.removeFromListAndSaveFile(list,"./data/"+client.getEmail()+"/"+client.getEmail()+"_sent.csv" , mailToDelete);
+                                            localAccount.getWriteFileSent().unlock();
+                                            break;
+                                        default:
+                                            throw new IllegalStateException("Param required for delete (ARRIVED or SENT)");
+
+                                    }
+                                    serverAnswer.println("Done");
+                                    System.out.println(Thread.currentThread().getName()+" ("+ip+") end delete");
+                                }
+                                catch(Exception e){
+                                    serverAnswer.println("Error: "+e.getMessage());
+                                }
                                 break;
 
                             case "quit":
                                 stop = true;
+
                                 break;
 
                             default:
+
+                                serverAnswer.println("Error: invalid command "+command);
+                                stop = true;
                                 break;
                         }
                     }
@@ -150,7 +221,7 @@ public class ClientHandlerThread extends Thread{
         }
         finally {
             System.out.println(Thread.currentThread().getName()+" ("+ip+") Closing connection... ");
-
+            model.prec.remove(this);
             try {
                 listening.close();
                 model.logHistory.add(

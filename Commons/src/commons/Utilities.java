@@ -2,6 +2,8 @@ package commons;
 
 
 
+import javafx.collections.ObservableList;
+
 import java.io.File;
 import java.io.PrintWriter;
 import java.text.DateFormat;
@@ -31,7 +33,7 @@ public abstract class Utilities {
             while (mailIn.hasNextLine()) {
                 String tmp = mailIn.nextLine();
                 Scanner l = new Scanner(tmp).useDelimiter("\\s*;\\s*");
-                EMail mailA = new EMail(l.next(), l.next(), l.next(), l.next(), l.next(), l.next());
+                EMail mailA = new EMail(l.next(), l.next(), l.next(), l.next(), l.next(), parseText(l.next()));
                 list.add(mailA);
                 l.close();
             }
@@ -51,7 +53,7 @@ public abstract class Utilities {
             while (mailIn.hasNextLine()) {
                 String tmp = mailIn.nextLine();
                 Scanner l = new Scanner(tmp).useDelimiter("\\s*;\\s*");
-                EMail mail = new EMail(l.next(), l.next(), l.next(), l.next(), l.next(), l.next());
+                EMail mail = new EMail(l.next(), l.next(), l.next(), l.next(), l.next(), parseText(l.next()));
                 l.close();
 
                 Date emailDate = DATE_FORMAT.parse(mail.getTime());
@@ -81,4 +83,44 @@ public abstract class Utilities {
             printWriter.close();
         }
     }
+
+
+    public static void removeFromListAndSaveFile (List<EMail> emailList, String filename, EMail selectedEmail) throws Exception {
+        File f = new File(filename);
+        synchronized (emailList) {
+            emailList.removeIf(eMail -> eMail.getId().equals(selectedEmail.getId()));
+            Utilities.saveEmailCsvToFile(emailList, filename);
+        }
+    }
+
+
+    public static String escapeText(final String text) {
+        if(text == null)
+            return null;
+        return text.replaceAll("\\n", "\\\\n");
+    }
+
+
+    public static String parseText(final String text) {
+        if(text == null)
+            return null;
+        return text.replaceAll("\\\\n", "\n");
+    }
+
+    /*public static void main (String [] args) {
+        String text = "Ciao \n Come stai?\nTutto bne?";
+        System.out.println("-------------");
+        System.out.println(text);
+
+        System.out.println("-------------");
+
+
+        System.out.println("prova escaping");
+        String textEscaped = escapeText(text);
+        System.out.println(textEscaped);
+        System.out.println("prova parsing");
+        System.out.println(parseText(textEscaped));
+
+
+    }*/
 }

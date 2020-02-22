@@ -13,6 +13,8 @@ import commons.Account;
 
 public class ServerModel {
 
+    public final static String MAIL_SERVER = "mail.server@mymail.com";
+
    // variabili gestione connessione
     public ServerSocket s = null;
     public Socket listening = null;
@@ -33,7 +35,7 @@ public class ServerModel {
         return logHistory;
     }
 
-    ArrayList<Account> accounts=new ArrayList<>();
+    Map<String, Account> accounts=new HashMap<>();
 
     //metodi per avviare e terminare la connessione del server
     public void startconnect(){
@@ -114,11 +116,17 @@ public class ServerModel {
             s = rr.nextLine();
             Scanner dr = new Scanner(s);
             dr.useDelimiter("\\s*;\\s*");
-            accounts.add(new Account(dr.next(), dr.next(), dr.next()));
+            Account acc = new Account(dr.next(), dr.next(), dr.next());
+            accounts.put(acc.getEmail(), acc);
             dr.close();
         }
         rr.close();
         //System.out.println(accounts.toString());
+    }
+
+    public String nextId() {
+        //TODO implementare ID
+        return UUID.randomUUID().toString();
     }
 }
 

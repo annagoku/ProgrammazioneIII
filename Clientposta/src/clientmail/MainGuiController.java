@@ -1,7 +1,11 @@
 package clientmail;
 
 import commons.Utilities;
+import javafx.application.Platform;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -15,12 +19,15 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
 
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URL;
 import java.time.format.DateTimeFormatter;
+import java.util.Properties;
 import java.util.ResourceBundle;
 
 import commons.EMail;
+import javafx.stage.WindowEvent;
 
 public class MainGuiController implements Initializable {
 
@@ -63,7 +70,7 @@ public class MainGuiController implements Initializable {
 
     //Configure Label
     @FXML
-    private Label receivingState;
+    private Label countNewMail;
     @FXML
     private Label stateConnection;
 
@@ -87,7 +94,7 @@ public class MainGuiController implements Initializable {
     private ClientModel mail;
     Stage primaryStage = null;
 
-    private static DateTimeFormatter DATEFORMAT = DateTimeFormatter.ofPattern("YYYY-MM-dd HH:mm:ss");
+
 
     //metodo di inizializzazione model/controller
     public void initModel(ClientModel model, Stage pm) {
@@ -99,6 +106,41 @@ public class MainGuiController implements Initializable {
         //aggancio l'observable list alla tabella
         tableArrived.setItems(model.getMailArrived());
         tableSent.setItems(model.getMailSent());
+
+        //Bindings
+
+        countNewMail.textProperty().bind(mail.countNewMailProperty());
+
+        // Binding tableArrived
+        stateMail.setCellValueFactory(cellData -> cellData.getValue().stateNewMailProperty());
+        dateArrived.setCellValueFactory(cellData -> cellData.getValue().timeProperty());
+        sender.setCellValueFactory(cellData -> cellData.getValue().senderProperty());
+        objectArrived.setCellValueFactory(cellData -> cellData.getValue().subjectProperty());
+
+
+        // Binding tableSent
+        dateSent.setCellValueFactory(cellData -> cellData.getValue().timeProperty());
+        recipients.setCellValueFactory(cellData -> cellData.getValue().recipientsProperty());
+        objectSent.setCellValueFactory(cellData -> cellData.getValue().subjectProperty());
+
+
+        // Listen for selection changes and show the mail details when changed.
+        tableArrived.getSelectionModel().selectedItemProperty().addListener(
+                (observable, oldValue, newValue) -> showMailDetails(newValue));
+
+        tableSent.getSelectionModel().selectedItemProperty().addListener(
+                (observable, oldValue, newValue) -> showMailDetails(newValue));
+
+        // handles window close -> shutdown application
+        primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
+            @Override
+            public void handle(WindowEvent event) {
+
+                Platform.exit();
+                System.exit(0);
+
+            }
+        });
     }
 
     //Ricezione mail su evento button Receive
@@ -122,13 +164,6 @@ public class MainGuiController implements Initializable {
         }
     }
 
-    //invio mail
-    @FXML
-    public void handleSend(){
-        if(selectedEmail!=null) {
-            new SendThread(mail,selectedEmail).start();
-        }
-    }
 
 
     //Selezione mail su click su riga arrived/sent
@@ -191,60 +226,16 @@ public class MainGuiController implements Initializable {
 
 
 
-    /*@FXML
-    public void eliminaMail(ActionEvent event) throws IOException {
-
-        panelEmailDetail.setVisible(false);
-        valueRecipients.setText("");
-        valueSender.setText("");
-        valueObject.setText("");
-        valueTextMail.setText("");
-
-        mail.removeArrivedMail(selectedEmail);
-
-    }*/
-
     @Override
-    public void initialize(URL url, ResourceBundle resourceBundle) {
+    public void initialize(URL url, ResourceBundle resourceBundle)  {
         panelEmailDetail.setVisible(false);
         tableArrived.setPlaceholder(new Label("No mail to display"));
         tableSent.setPlaceholder(new Label("No mail to display"));
-        receivingState.setText("No new mail");
+        countNewMail.setText("No new mail");
         replayMail.setDisable(true);
         replayAllMail.setDisable(true);
         deleteMail.setDisable(true);
         forwardMail.setDisable(true);
-
-
-        // Binding tableArrived
-        stateMail.setCellValueFactory(cellData -> cellData.getValue().stateNewMailProperty());
-        dateArrived.setCellValueFactory(cellData -> cellData.getValue().timeProperty());
-        sender.setCellValueFactory(cellData -> cellData.getValue().senderProperty());
-        objectArrived.setCellValueFactory(cellData -> cellData.getValue().subjectProperty());
-
-
-        // Binding tableSent
-        dateSent.setCellValueFactory(cellData -> cellData.getValue().timeProperty());
-        recipients.setCellValueFactory(cellData -> cellData.getValue().recipientsProperty());
-        objectSent.setCellValueFactory(cellData -> cellData.getValue().subjectProperty());
-
-
-        // Listen for selection changes and show the mail details when changed.
-        tableArrived.getSelectionModel().selectedItemProperty().addListener(
-                (observable, oldValue, newValue) -> showMailDetails(newValue));
-
-       tableSent.getSelectionModel().selectedItemProperty().addListener(
-                (observable, oldValue, newValue) -> showMailDetails(newValue));
-
-
-       //binding label connection
-       //ClientModel model=new ClientModel();
-
-
-       //stateConnection.textProperty().bind(model.connectionProperty());
-
-
-
     }
 
 }

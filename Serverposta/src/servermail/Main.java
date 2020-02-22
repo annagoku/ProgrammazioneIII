@@ -1,10 +1,15 @@
 package servermail;
 
 import javafx.application.Application;
+import javafx.application.Platform;
+import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
+
+import java.io.IOException;
 
 public class Main extends Application {
 
@@ -20,7 +25,20 @@ public class Main extends Application {
         ServerModel model= new ServerModel();
         serverController.init(model);
 
-
+        primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
+            @Override
+            public void handle(WindowEvent event) {
+                try {
+                    model.endconnect();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                finally {
+                    Platform.exit();
+                    System.exit(0);
+                }
+            }
+        });
     }
 
 

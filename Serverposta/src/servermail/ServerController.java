@@ -36,6 +36,9 @@ public class ServerController implements Initializable {
             state.setTextFill(Color.RED);
             connect.setDisable(true);
         }
+
+
+
     }
 
 

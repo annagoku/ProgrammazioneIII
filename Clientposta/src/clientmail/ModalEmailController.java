@@ -116,7 +116,7 @@ public class ModalEmailController implements Initializable {
     }
 
     @FXML
-    public void send(ActionEvent event){
+    public void handleSend(ActionEvent event){
 
         EMail email = new EMail("", Utilities.dateString(),
                 model.getCasella(),
@@ -124,10 +124,8 @@ public class ModalEmailController implements Initializable {
                 valueObject.getText(),
                 valueText.getText());
 
-        //TODO aggiungere logica per inviare la mail
 
-
-        model.getMailSent().add(email);
+        new SendThread(model,email).start();
         this.stage.close();
     }
 
