@@ -22,10 +22,11 @@ public class ReceiveThread extends Thread {
         this.model=model;
         this.demon = demon;
         if(demon)
-            prefixLog+="(demon)";
+            prefixLog+="(demon) ";
     }
 
     public void run() {
+        LOGGER.info(prefixLog+" running..");
         if(demon) {
             while(true) {
                 try {
@@ -50,6 +51,7 @@ public class ReceiveThread extends Thread {
 
         Socket s = null;
         try {
+            LOGGER.debug(prefixLog+"connection to "+model.host+":"+model.port);
             s = new Socket(model.host, model.port);
             try {
                 OutputStream out = s.getOutputStream();
@@ -61,7 +63,7 @@ public class ReceiveThread extends Thread {
 
                 clientObjOut.writeObject(model.getAccount());
                 String serverAnswer = clientIn.nextLine();
-                LOGGER.info(prefixLog+" Server says "+serverAnswer);
+                LOGGER.info(prefixLog+"Server says "+serverAnswer);
 
                 if (serverAnswer.equals("Ready")) {
                     String timestamp = "";
@@ -71,7 +73,7 @@ public class ReceiveThread extends Thread {
                     }
                     clientPrint.println("Receive "+timestamp);
                     serverAnswer = clientIn.nextLine();
-                    LOGGER.info(prefixLog+": server answer -> "+serverAnswer);
+                    LOGGER.info(prefixLog+"server answer -> "+serverAnswer);
                     if(serverAnswer.equals("Done")) {
                         List<EMail> list = (List<EMail>)clientObjIn.readObject();
 
@@ -86,7 +88,7 @@ public class ReceiveThread extends Thread {
                                         if(list.size()>0) {
                                             model.setCountNewMail(Integer.toString(list.size()));
                                             Alert alert = new Alert(Alert.AlertType.INFORMATION);
-                                            alert.setContentText("Ci sono " + list.size() + " nuove mail");
+                                            alert.setHeaderText(list.size() + " new mail"+(list.size()>1 ? "s!":"!"));
                                             alert.show();
                                         }
                                         else {
@@ -103,7 +105,7 @@ public class ReceiveThread extends Thread {
                     }
                 }
                 else {
-                    LOGGER.error(prefixLog+": error on receiving. Server says "+serverAnswer);
+                    LOGGER.error(prefixLog+"error on receiving. Server says "+serverAnswer);
                 }
                 clientPrint.println("Quit");
 
@@ -112,9 +114,28 @@ public class ReceiveThread extends Thread {
 
             } catch (Exception e) {
                 e.printStackTrace();
+                Platform.runLater(() -> {
+                    synchronized (model.lock) {
+                        model.setCountNewMail("No new mail");
+                        Alert alert = new Alert(Alert.AlertType.ERROR);
+                        alert.setHeaderText("Error on receive mail");
+                        alert.setContentText(e.getMessage());
+                        alert.show();
+                    }
+                });
             }
         } catch (IOException e) {
             e.printStackTrace();
+            Platform.runLater(() -> {
+                synchronized (model.lock) {
+                    model.setCountNewMail("No new mail");
+                    Alert alert = new Alert(Alert.AlertType.ERROR);
+                    alert.setHeaderText("Cannot connect to server");
+                    alert.setContentText(e.getMessage());
+                    alert.show();
+                }
+            });
+
         }
 
 

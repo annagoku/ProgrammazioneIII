@@ -1,5 +1,6 @@
 package servermail;
 
+import commons.SystemLogger;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -12,6 +13,7 @@ import java.net.URL;
 import java.util.ResourceBundle;
 
 public class ServerController implements Initializable {
+    private static SystemLogger LOGGER = new SystemLogger(ServerController.class);
 
     private ServerModel model;
 
@@ -66,6 +68,7 @@ public class ServerController implements Initializable {
 
 
     public void handleconnection(ActionEvent e) {
+        LOGGER.debug("pressed Connect button");
         model.startconnect();
         state.setText("Connected");
         state.setTextFill(Color.GREEN);
@@ -75,6 +78,7 @@ public class ServerController implements Initializable {
     }
 
     public void handleclose(ActionEvent e){
+        LOGGER.debug("pressed Close button");
         try {
             model.endconnect();
             state.setText("Disconnect");
@@ -82,6 +86,7 @@ public class ServerController implements Initializable {
             disconnect.setDisable(true);
             connect.setDisable(false);
         } catch (IOException ex) {
+            LOGGER.error(ex.getMessage());
             ex.printStackTrace();
             state.setText("Disconnect error: "+ex.getMessage());
             state.setTextFill(Color.RED);

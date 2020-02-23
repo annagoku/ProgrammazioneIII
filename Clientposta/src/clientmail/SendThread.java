@@ -1,6 +1,7 @@
 package clientmail;
 
 import commons.EMail;
+import commons.SystemLogger;
 import commons.Utilities;
 import javafx.application.Platform;
 import javafx.scene.control.Alert;
@@ -17,7 +18,7 @@ public class SendThread extends Thread {
     private ClientModel model;
     static Pattern patternDone = Pattern.compile("Done\\s+(.*)");
 
-    private String prefixLog = getClass().getName();
+    private static SystemLogger LOGGER = new SystemLogger(SendThread.class);
 
     public SendThread(ClientModel model, EMail m) {
         this.model = model;
@@ -30,7 +31,7 @@ public class SendThread extends Thread {
         Socket s;
 
         try {
-            System.out.println(prefixLog+": Connecting to "+model.host+":"+  model.port);
+            LOGGER.debug("connection to "+model.host+":"+model.port);
             s = new Socket(model.host, model.port);
             try {
                 OutputStream out = s.getOutputStream();
@@ -43,11 +44,11 @@ public class SendThread extends Thread {
                 clientObjOut.writeObject(model.getAccount());
 
                 String serverAnswer = clientIn.nextLine();
-                System.out.println(prefixLog+": Server says" +serverAnswer);
+                LOGGER.debug("Server says" +serverAnswer);
 
                 if (serverAnswer.equals("Ready")) {
 
-                    System.out.println(prefixLog+": sending email...");
+                    LOGGER.debug("sending email...");
                     clientPrint.println("Send");
                     clientObjOut.writeObject(mailSend);
 
@@ -55,14 +56,16 @@ public class SendThread extends Thread {
                     clientPrint.println("QUIT");
 
                     Matcher m = patternDone.matcher(res);
-                    System.out.println(prefixLog+": Server ansewer ->" +res);
+                    LOGGER.debug("Server ansewer ->" +res);
 
                     if(m.matches()) {
                         String mailID = m.group(1);
                         mailSend.setId(mailID);
+                        model.getFileSent().add(mailSend);
+
                         model.sem.acquire();
                         model.getMailSent().add(mailSend);
-                        Utilities.saveEmailCsvToFile(model.getMailSent(), "./data/"+model.getCasella()+"_sent.csv");
+
                         model.sem.release();
                     }
                     else {
@@ -70,7 +73,8 @@ public class SendThread extends Thread {
                                 () -> {
                                     synchronized (model.lock) {
                                         Alert alert = new Alert(Alert.AlertType.ERROR);
-                                        alert.setContentText("Cannot send mail: " + res);
+                                        alert.setHeaderText("Cannot send mail");
+                                        alert.setContentText(res);
                                         alert.show();
                                     }
                                 }
@@ -83,9 +87,29 @@ public class SendThread extends Thread {
                 s.close();
             } catch (Exception e) {
                 e.printStackTrace();
+                Platform.runLater(
+                        () -> {
+                            synchronized (model.lock) {
+                                Alert alert = new Alert(Alert.AlertType.ERROR);
+                                alert.setHeaderText("Cannot send mail");
+                                alert.setContentText(e.getMessage());
+                                alert.show();
+                            }
+                        }
+                );
             }
         } catch (IOException e) {
             e.printStackTrace();
+            Platform.runLater(
+                    () -> {
+                        synchronized (model.lock) {
+                            Alert alert = new Alert(Alert.AlertType.ERROR);
+                            alert.setHeaderText("Cannot send mail");
+                            alert.setContentText(e.getMessage());
+                            alert.show();
+                        }
+                    }
+            );
         }
     }
 }

@@ -73,7 +73,8 @@ public class DeleteThread extends Thread {
                                         } catch (Exception e) {
 //                                            synchronized ((model.lock)) {
                                                 Alert alert = new Alert(Alert.AlertType.ERROR);
-                                                alert.setContentText("Cannot update file mail arrived: " + e.getMessage());
+                                                alert.setHeaderText("Cannot update file mail arrived");
+                                                alert.setContentText( e.getMessage());
                                                 alert.show();
 //                                            }
                                         }finally {
@@ -93,7 +94,8 @@ public class DeleteThread extends Thread {
                                         } catch (Exception e) {
                                             synchronized ((model.lock)) {
                                                 Alert alert = new Alert(Alert.AlertType.ERROR);
-                                                alert.setContentText("Cannot update file mail sent: " + e.getMessage());
+                                                alert.setHeaderText("Cannot update file mail sent");
+                                                alert.setContentText( e.getMessage());
                                                 alert.show();
                                             }
                                         }
@@ -108,7 +110,8 @@ public class DeleteThread extends Thread {
                                     () -> {
                                         synchronized (model.lock) {
                                             Alert alert = new Alert(Alert.AlertType.ERROR);
-                                            alert.setContentText("Cannot delete mail: " + res);
+                                            alert.setHeaderText("Cannot delete mail");
+                                            alert.setContentText( res);
                                             alert.show();
                                         }
                                     }
@@ -119,10 +122,29 @@ public class DeleteThread extends Thread {
                     s.close();
             } catch (Exception  e) {
                     e.printStackTrace();
-                    //TODO gestire meglio le eccezioni
+                    Platform.runLater(
+                            () -> {
+                                synchronized (model.lock) {
+                                    Alert alert = new Alert(Alert.AlertType.ERROR);
+                                    alert.setHeaderText("Cannot delete mail");
+                                    alert.setContentText( e.getMessage());
+                                    alert.show();
+                                }
+                            }
+                    );
             }
         } catch(IOException e){
                 e.printStackTrace();
+                Platform.runLater(
+                        () -> {
+                            synchronized (model.lock) {
+                                Alert alert = new Alert(Alert.AlertType.ERROR);
+                                alert.setHeaderText("Cannot delete mail");
+                                alert.setContentText( e.getMessage());
+                                alert.show();
+                            }
+                        }
+                );
         }
     }
 

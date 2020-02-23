@@ -1,5 +1,6 @@
 package servermail;
 
+import commons.SystemLogger;
 import javafx.collections.ObservableList;
 
 import java.io.FileWriter;
@@ -12,6 +13,7 @@ public class SaveLogDaemonThread extends Thread {
     private ServerModel model;
     private PrintWriter saveLog;
     private int lastPos = 0;
+    private static SystemLogger LOGGER = new SystemLogger(SaveLogDaemonThread.class);
 
     public SaveLogDaemonThread(ObservableList<Log> l, ServerModel model) {
         setDaemon(true);
@@ -27,12 +29,12 @@ public class SaveLogDaemonThread extends Thread {
 
             while (true) {
                 try {
-                    Thread.sleep(10000);
+                    Thread.sleep(30000);
                 } catch (InterruptedException e) {
-                   System.out.println("SaveLogDaemon interrupted: "+e.getMessage());
+                    LOGGER.warn("interrupted: "+e.getMessage());
                 }
 
-                System.out.println("SaveLogDaemon: saving logs");
+                LOGGER.info("saving logs");
 
                 int i = 0;
                 for (i=lastPos; i<listLog.size(); i++) {
@@ -45,6 +47,7 @@ public class SaveLogDaemonThread extends Thread {
 
 
         } catch (IOException e) {
+            LOGGER.error(e.getMessage());
             e.printStackTrace();
         }
 

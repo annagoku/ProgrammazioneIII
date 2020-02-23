@@ -1,5 +1,6 @@
 package servermail;
 
+import commons.SystemLogger;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.event.EventHandler;
@@ -12,6 +13,7 @@ import javafx.stage.WindowEvent;
 import java.io.IOException;
 
 public class Main extends Application {
+    private static SystemLogger LOGGER = new SystemLogger(Main.class);
 
     @Override
     public void start(Stage primaryStage) throws Exception{
@@ -28,9 +30,11 @@ public class Main extends Application {
         primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
             @Override
             public void handle(WindowEvent event) {
+                LOGGER.debug("window close");
                 try {
                     model.endconnect();
                 } catch (IOException e) {
+                    LOGGER.error(e.getMessage());
                     e.printStackTrace();
                 }
                 finally {
@@ -39,11 +43,12 @@ public class Main extends Application {
                 }
             }
         });
+        LOGGER.info("ServerPosta started");
+
     }
 
 
     public static void main(String[] args) {
-
         launch(args);
     }
 }

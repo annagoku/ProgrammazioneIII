@@ -1,6 +1,7 @@
 package servermail;
 
 import commons.FileHandler;
+import commons.SystemLogger;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
@@ -15,6 +16,7 @@ import commons.Account;
 public class ServerModel {
 
     public final static String MAIL_SERVER = "mail.server@mymail.com";
+    private static SystemLogger LOGGER = new SystemLogger(ServerModel.class);
 
    // variabili gestione connessione
     public ServerSocket s = null;
@@ -69,13 +71,13 @@ public class ServerModel {
         }
 
         public void run() {
-            System.out.println("Provo a connettere");
+            LOGGER.info("Connecting");
             try {
                 s = new ServerSocket(8089);
                 while (true) {
-                    System.out.println("Rimango in attesa");
+                    LOGGER.info("waiting for connections");
                     listening = s.accept();
-                    System.out.println("accettata nuova connessione... creo clientHandler");
+                    LOGGER.info("new connection accepted... creating clientHandler");
                     ClientHandlerThread h = new ClientHandlerThread(listening, model);
                     prec.add(h);
                     h.start();
@@ -83,15 +85,15 @@ public class ServerModel {
 
                 }
             }catch (IOException e) {
-                System.out.println("Interruzione del server ("+e.getMessage()+")");
+                LOGGER.error("Interruzione del server ("+e.getMessage()+")");
             }
 
             finally {
                 try {
-                    System.out.println("sto disconnettendo");
+                    LOGGER.info("disconnecting...");
                     if(listening != null)
                         listening.close();
-                    System.out.println("disconnesso");
+                    LOGGER.info("disconnected");
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
