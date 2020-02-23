@@ -146,6 +146,7 @@ public class MainGuiController implements Initializable {
     //Ricezione mail su evento button Receive
     @FXML
     public void handleReceive(){
+        mail.setCountNewMail("Loading mail from server....");
         new ReceiveThread(mail, false).start();
 
     }

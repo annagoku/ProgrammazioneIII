@@ -27,20 +27,20 @@ public class SaveLogDaemonThread extends Thread {
 
             while (true) {
                 try {
-                    Thread.sleep(20000);
+                    Thread.sleep(10000);
                 } catch (InterruptedException e) {
                    System.out.println("SaveLogDaemon interrupted: "+e.getMessage());
                 }
 
                 System.out.println("SaveLogDaemon: saving logs");
-                synchronized (listLog) {
-                    int i = 0;
-                    for (i=lastPos; i<listLog.size(); i++) {
 
-                        saveLog.println(listLog.get(i).toString());
-                    }
-                    lastPos=i;
+                int i = 0;
+                for (i=lastPos; i<listLog.size(); i++) {
+
+                    saveLog.println(listLog.get(i).toString());
                 }
+                lastPos=i;
+
             }
 
 

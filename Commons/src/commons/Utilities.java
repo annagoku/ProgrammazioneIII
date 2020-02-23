@@ -13,6 +13,7 @@ import java.util.*;
 
 public abstract class Utilities {
     public static DateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    public static DateFormat DATE_FORMAT_MILLIS = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
 
 
     public static String dateString() {
@@ -21,6 +22,15 @@ public abstract class Utilities {
 
     public static String dateString(Date date) {
         return DATE_FORMAT.format(date);
+    }
+
+    public static String dateStringMillis() {
+
+        return DATE_FORMAT_MILLIS.format(Calendar.getInstance().getTime());
+    }
+
+    public static String dateStringMillis(Date date) {
+        return DATE_FORMAT_MILLIS.format(date);
     }
 
     public static List<EMail> loadMailFromCSV(String filename)   throws  Exception{
@@ -84,6 +94,13 @@ public abstract class Utilities {
         }
     }
 
+    public static String getReplyText(EMail sourceMail) {
+        return  "\n\n------------------------------\nFrom: "+sourceMail.getSender()+ "\n" +
+                "Sent: "+sourceMail.getTime() +"\n"+
+                "To: "+sourceMail.getRecipients()+"\n"+
+                "Subject: "+ sourceMail.getSubject()+"\n\n"+
+                sourceMail.getText();
+    }
 
     public static void removeFromListAndSaveFile (List<EMail> emailList, String filename, EMail selectedEmail) throws Exception {
         File f = new File(filename);

@@ -1,6 +1,7 @@
 package clientmail;
 
 import commons.EMail;
+import commons.SystemLogger;
 import commons.Utilities;
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
@@ -15,16 +16,16 @@ public class DeleteThread extends Thread {
     private EMail mailDelete;
     private ClientModel model;
     public enum Selection {ARRIVED, SENT};
+    private static SystemLogger LOGGER = new SystemLogger(DeleteThread.class);
 
     private Selection selection = null;
-    private String prefixLog = getClass().getName();
 
     public DeleteThread (Selection s, ClientModel model, EMail mail){
 
         this.model=model;
         this.mailDelete=mail;
         this.selection = s;
-        System.out.println(prefixLog+": deleting email "+mail.getId()+ " from "+selection);
+        LOGGER.info("deleting email "+mail.getId()+ " from "+selection);
     }
 
     public void run() {
@@ -34,7 +35,7 @@ public class DeleteThread extends Thread {
         File f = null;
 
             try {
-                System.out.println(prefixLog+": connecting to server...");
+                LOGGER.info("connecting to server...");
 
                 s = new Socket(model.host, model.port);
                 try {
@@ -48,12 +49,13 @@ public class DeleteThread extends Thread {
                     clientObjOut.writeObject(model.getAccount());
 
                     String serverAnswer = clientIn.nextLine();
-                    System.out.println(prefixLog+": Server says" +serverAnswer);
+                    LOGGER.debug("Server says" +serverAnswer);
 
                     if (serverAnswer.equals("Ready")) {
-                        System.out.println(prefixLog+": connected. Sending delete command..");
-                        clientPrint.println("Delete "+selection.toString());
-                        clientObjOut.writeObject(mailDelete);
+                        LOGGER.debug("connected. Sending delete command.."+" mailId "+mailDelete.getId());
+                        clientPrint.println("Delete "+selection.toString() );
+                        clientPrint.println(mailDelete.getId());
+                        //clientObjOut.writeObject(mailDelete);
                         String res = clientIn.nextLine();
                         clientPrint.println("QUIT");
 
@@ -61,22 +63,41 @@ public class DeleteThread extends Thread {
 
                             switch (selection) {
                                 case ARRIVED:
-                                    //Utilities.removeFromListAndSaveFile(model.getMailArrived(), "./data/"+model.getCasella()+"_arrived.csv", mailDelete);
-                                    Platform.runLater(() -> {
-                                        //model.getMailArrived().remove(mailDelete);
-                                        try {
-                                            Utilities.removeFromListAndSaveFile(model.getMailArrived(), "./data/"+model.getCasella()+"_arrived.csv", mailDelete);
-                                            //Utilities.saveEmailCsvToFile(model.getMailArrived(), "./data/"+model.getCasella()+"_arrived.csv");
-                                        } catch (Exception e) {
-                                            Alert alert = new Alert(Alert.AlertType.ERROR);
-                                            alert.setContentText("Cannot update file mail arrived: "+e.getMessage());
-                                            alert.show();
-                                        }
+                                    model.getFileArrived().remove(mailDelete.getId());
 
+                                    Platform.runLater(() -> {
+                                        try {
+                                            model.sem.acquire();
+                                            model.getMailArrived().removeIf(eMail -> eMail.getId().equals(mailDelete.getId()));
+
+                                        } catch (Exception e) {
+//                                            synchronized ((model.lock)) {
+                                                Alert alert = new Alert(Alert.AlertType.ERROR);
+                                                alert.setContentText("Cannot update file mail arrived: " + e.getMessage());
+                                                alert.show();
+//                                            }
+                                        }finally {
+                                            model.sem.release();
+                                        }
                                     });
                                     break;
                                 case SENT:
-                                    Utilities.removeFromListAndSaveFile(model.getMailSent(), "./data/"+model.getCasella()+"_sent.csv", mailDelete);
+                                    model.getFileSent().remove(mailDelete.getId());
+
+                                    Platform.runLater(() -> {
+                                        try {
+                                            model.sem.acquire();
+                                            model.getMailSent().removeIf(eMail -> eMail.getId().equals(mailDelete.getId()));
+                                            model.sem.release();
+
+                                        } catch (Exception e) {
+                                            synchronized ((model.lock)) {
+                                                Alert alert = new Alert(Alert.AlertType.ERROR);
+                                                alert.setContentText("Cannot update file mail sent: " + e.getMessage());
+                                                alert.show();
+                                            }
+                                        }
+                                    });
                                     break;
                                 default:
                                     throw new RuntimeException("shouldn't be here");
@@ -85,13 +106,16 @@ public class DeleteThread extends Thread {
                         else {
                             Platform.runLater(
                                     () -> {
-                                        Alert alert = new Alert(Alert.AlertType.ERROR);
-                                        alert.setContentText("Cannot delete mail: "+res);
-                                        alert.show();
+                                        synchronized (model.lock) {
+                                            Alert alert = new Alert(Alert.AlertType.ERROR);
+                                            alert.setContentText("Cannot delete mail: " + res);
+                                            alert.show();
+                                        }
                                     }
                             );
                         }
-                    }
+                        }
+
                     s.close();
             } catch (Exception  e) {
                     e.printStackTrace();

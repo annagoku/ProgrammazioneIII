@@ -56,9 +56,7 @@ public class ModalEmailController implements Initializable {
                     valueObject.setText(("R: ".concat(mailsel.getSubject())));
                     date.setText(Utilities.dateString());
                     valueRecipients.setText(mailsel.getSender());
-                    String tmp=("\n"+"\n"+"From: "+mailsel.getSender()+ "\n" +"Sent: "+mailsel.getTime() +"\n"+"To: "+mailsel.getRecipients()+"\n"+
-                            "Subject: "+ mailsel.getSubject());
-                    valueText.setText(tmp.concat(mailsel.getText()));
+                    valueText.setText(Utilities.getReplyText(mailsel));
                 }
                 break;
             case "REPLY ALL":
@@ -69,10 +67,8 @@ public class ModalEmailController implements Initializable {
                     valueSender.setStyle("-fx-opacity: 1;");
                     valueObject.setText(("R: ".concat(mailsel.getSubject())));
                     date.setText(Utilities.dateString());
-                    valueRecipients.setText(mailsel.getSender().concat("; "+mailsel.getRecipients()));
-                    String tmp=("\n"+"\n"+"From: "+mailsel.getSender()+ "\n" +"Sent: "+mailsel.getTime() +"\n"+"To: "+mailsel.getRecipients()+"\n"+
-                            "Subject: "+ mailsel.getSubject());
-                    valueText.setText(tmp.concat(mailsel.getText()));
+                    valueRecipients.setText(mailsel.getSender()+", "+mailsel.getRecipients());
+                    valueText.setText(Utilities.getReplyText(mailsel));
                 }
                 break;
             case "FORWARD":
@@ -84,9 +80,7 @@ public class ModalEmailController implements Initializable {
                     valueObject.setText(("F: ".concat(mailsel.getSubject())));
                     date.setText(Utilities.dateString());
                     valueRecipients.setText("");
-                    String tmp=("\n"+"\n"+"From: "+mailsel.getSender()+ "\n" +"Sent: "+mailsel.getTime() +"\n"+"To: "+mailsel.getRecipients()+"\n"+
-                            "Subject: "+ mailsel.getSubject());
-                    valueText.setText(tmp.concat("\n"+"\n"+"\n"+mailsel.getText()));
+                    valueText.setText(Utilities.getReplyText(mailsel));
                 }
                 break;
             case "MOUSEEVENT":

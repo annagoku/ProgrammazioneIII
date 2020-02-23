@@ -1,5 +1,6 @@
 package servermail;
 
+import commons.FileHandler;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
@@ -36,6 +37,9 @@ public class ServerModel {
     }
 
     Map<String, Account> accounts=new HashMap<>();
+    Map<String, FileHandler> arrivedFileHandler=new HashMap<String, FileHandler>();
+    Map<String, FileHandler> sentFileHandler=new HashMap<String, FileHandler>();
+
 
     //metodi per avviare e terminare la connessione del server
     public void startconnect(){
@@ -118,6 +122,8 @@ public class ServerModel {
             dr.useDelimiter("\\s*;\\s*");
             Account acc = new Account(dr.next(), dr.next(), dr.next());
             accounts.put(acc.getEmail(), acc);
+            arrivedFileHandler.put(acc.getEmail(), new FileHandler("./data/"+acc.getEmail()+"/"+acc.getEmail()+"_arrived.csv"));
+            sentFileHandler.put(acc.getEmail(), new FileHandler("./data/"+acc.getEmail()+"/"+acc.getEmail()+"_sent.csv"));
             dr.close();
         }
         rr.close();

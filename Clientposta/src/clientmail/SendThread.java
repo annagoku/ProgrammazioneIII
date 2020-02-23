@@ -60,20 +60,23 @@ public class SendThread extends Thread {
                     if(m.matches()) {
                         String mailID = m.group(1);
                         mailSend.setId(mailID);
-                        synchronized (model.getMailSent()) {
-                            model.getMailSent().add(mailSend);
-                            Utilities.saveEmailCsvToFile(model.getMailSent(), "./data/"+model.getCasella()+"_sent.csv");
-                        }
-
+                        model.sem.acquire();
+                        model.getMailSent().add(mailSend);
+                        Utilities.saveEmailCsvToFile(model.getMailSent(), "./data/"+model.getCasella()+"_sent.csv");
+                        model.sem.release();
                     }
                     else {
                         Platform.runLater(
                                 () -> {
-                                    Alert alert = new Alert(Alert.AlertType.ERROR);
-                                    alert.setContentText("Cannot send mail: "+res);
-                                    alert.show();
+                                    synchronized (model.lock) {
+                                        Alert alert = new Alert(Alert.AlertType.ERROR);
+                                        alert.setContentText("Cannot send mail: " + res);
+                                        alert.show();
+                                    }
                                 }
                         );
+
+
                     }
 
                 }

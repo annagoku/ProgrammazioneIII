@@ -1,6 +1,7 @@
 package clientmail;
 
 import commons.EMail;
+import commons.SystemLogger;
 import commons.Utilities;
 import javafx.application.Platform;
 import javafx.scene.control.Alert;
@@ -14,8 +15,8 @@ import java.util.Scanner;
 public class ReceiveThread extends Thread {
     private ClientModel model;
     private boolean demon;
-
-    private String prefixLog = getClass().getName();
+    private static SystemLogger LOGGER = new SystemLogger(ReceiveThread.class);
+    private String prefixLog = "";
 
     public ReceiveThread (ClientModel model, boolean demon){
         this.model=model;
@@ -28,13 +29,17 @@ public class ReceiveThread extends Thread {
         if(demon) {
             while(true) {
                 try {
-                    Thread.sleep(20000);
+                    Thread.sleep(30000);
                 } catch (InterruptedException e) {
                 }
                 receiveLogic();
             }
         }
         else {
+            try {
+                Thread.sleep(4000);
+            } catch (InterruptedException e) {
+            }
             receiveLogic();
         }
     }
@@ -42,84 +47,76 @@ public class ReceiveThread extends Thread {
 
     private void receiveLogic() {
 
-        synchronized (model.lockReceive) {
-            Platform.runLater(
-                    () -> {
-                        model.setCountNewMail("Loading mail from server....");
-                        try{
-                            sleep(4000);
-                        }catch (InterruptedException e){
-                            e.printStackTrace();
-                        }
-                    }
-            );
 
-            Socket s = null;
+        Socket s = null;
+        try {
+            s = new Socket(model.host, model.port);
             try {
-                s = new Socket(model.host, model.port);
-                try {
-                    OutputStream out = s.getOutputStream();
-                    InputStream in = s.getInputStream();
-                    ObjectOutputStream clientObjOut = new ObjectOutputStream(out);
-                    ObjectInputStream clientObjIn = new ObjectInputStream(in);
-                    Scanner clientIn = new Scanner(in);
-                    PrintWriter clientPrint = new PrintWriter(out, true);
+                OutputStream out = s.getOutputStream();
+                InputStream in = s.getInputStream();
+                ObjectOutputStream clientObjOut = new ObjectOutputStream(out);
+                ObjectInputStream clientObjIn = new ObjectInputStream(in);
+                Scanner clientIn = new Scanner(in);
+                PrintWriter clientPrint = new PrintWriter(out, true);
 
-                    clientObjOut.writeObject(model.getAccount());
-                    String serverAnswer = clientIn.nextLine();
-                    System.out.println(prefixLog+": Server says "+serverAnswer);
+                clientObjOut.writeObject(model.getAccount());
+                String serverAnswer = clientIn.nextLine();
+                LOGGER.info(prefixLog+" Server says "+serverAnswer);
 
-                    if (serverAnswer.equals("Ready")) {
-                        String timestamp = "";
-                        if(!model.getMailArrived().isEmpty()){
-                            timestamp=(model.getMailArrived().get(model.getMailArrived().size()-1)).getTime();
+                if (serverAnswer.equals("Ready")) {
+                    String timestamp = "";
+                    if(!model.getMailArrived().isEmpty()){
+                        timestamp=(model.getMailArrived().get(model.getMailArrived().size()-1)).getTime();
 
-                        }
-                        clientPrint.println("Receive "+timestamp);
-                        serverAnswer = clientIn.nextLine();
-                        System.out.println(prefixLog+": server answer -> "+serverAnswer);
-                        if(serverAnswer.equals("Done")) {
-                            synchronized (model.getMailArrived()) {
-                                List<EMail> list = (List<EMail>) clientObjIn.readObject();
-                                if(list.size()!=0){
-                                   Platform.runLater(
-                                           () -> {
-                                                model.setCountNewMail(Integer.toString(list.size()));
-                                                Alert alert = new Alert(Alert.AlertType.INFORMATION);
-                                                alert.setContentText("Ci sono "+list.size()+" nuove mail");
-                                                alert.show();
-                                           }
-                                    );
-
-
-                                }else {
-                                    Platform.runLater(
-                                            () -> {
-                                                model.setCountNewMail("No new mail");
-
-                                          }
-                                    );
-                                }
-                                model.getMailArrived().addAll(list);
-
-                                Utilities.saveEmailCsvToFile(model.getMailArrived(), "./data/"+model.getCasella()+"_arrived.csv");
-                            }
-                        }
-                        else {
-                            System.out.println(prefixLog+": error on receiving. Server says "+serverAnswer);
-                        }
-                        clientPrint.println("Quit");
-
-                        s.close();
                     }
+                    clientPrint.println("Receive "+timestamp);
+                    serverAnswer = clientIn.nextLine();
+                    LOGGER.info(prefixLog+": server answer -> "+serverAnswer);
+                    if(serverAnswer.equals("Done")) {
+                        List<EMail> list = (List<EMail>)clientObjIn.readObject();
 
-                } catch (Exception e) {
-                    e.printStackTrace();
+                        //aggiorna il file
+                        model.getFileArrived().addAll(list);
+
+                        Platform.runLater(
+                                () -> {
+                                    try {
+                                        model.sem.acquire();
+                                        model.getMailArrived().addAll(list);
+                                        if(list.size()>0) {
+                                            model.setCountNewMail(Integer.toString(list.size()));
+                                            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                                            alert.setContentText("Ci sono " + list.size() + " nuove mail");
+                                            alert.show();
+                                        }
+                                        else {
+                                            model.setCountNewMail("No new mail");
+                                        }
+                                    } catch (InterruptedException e) {
+                                        e.printStackTrace();
+                                    }
+                                    finally {
+                                        model.sem.release();
+                                    }
+                                }
+                        );
+                    }
                 }
-            } catch (IOException e) {
+                else {
+                    LOGGER.error(prefixLog+": error on receiving. Server says "+serverAnswer);
+                }
+                clientPrint.println("Quit");
+
+                s.close();
+
+
+            } catch (Exception e) {
                 e.printStackTrace();
             }
+        } catch (IOException e) {
+            e.printStackTrace();
         }
+
 
     }
 }
