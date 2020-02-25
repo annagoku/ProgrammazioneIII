@@ -39,6 +39,14 @@ public class ServerController implements Initializable {
             connect.setDisable(true);
         }
 
+        try {
+            model.loadNextId();
+        } catch (Exception e) {
+            state.setText("Error: generateId file not found");
+            state.setTextFill(Color.RED);
+            connect.setDisable(true);
+        }
+
 
 
     }

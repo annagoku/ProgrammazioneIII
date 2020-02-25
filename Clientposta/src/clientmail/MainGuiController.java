@@ -1,9 +1,6 @@
 package clientmail;
 
-import commons.Utilities;
 import javafx.application.Platform;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -19,11 +16,8 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
 
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URL;
-import java.time.format.DateTimeFormatter;
-import java.util.Properties;
 import java.util.ResourceBundle;
 
 import commons.EMail;
@@ -65,14 +59,13 @@ public class MainGuiController implements Initializable {
     private Button deleteMail;
     @FXML
     private Button receiveMail;
-    @FXML
-    private Button openSelec;
+
 
     //Configure Label
     @FXML
-    private Label countNewMail;
+    private Label connection; //TODO si potrebbe fare il binding con un'altra variabile del model che segna connected o errori di connessione
     @FXML
-    private Label stateConnection;
+    private Label action;
 
     //Preview mail
     @FXML
@@ -91,17 +84,17 @@ public class MainGuiController implements Initializable {
     private EMail selectedEmail;
     private String commandEvent;
 
-    private ClientModel mail;
+    private ClientModel model;
     Stage primaryStage = null;
 
 
 
     //metodo di inizializzazione model/controller
     public void initModel(ClientModel model, Stage pm) {
-        if (this.mail != null) {
+        if (this.model != null) {
             throw new IllegalStateException("Model può essere inizializzato una sola volta");
         }
-        this.mail = model;
+        this.model = model;
         this.primaryStage = pm;
         //aggancio l'observable list alla tabella
         tableArrived.setItems(model.getMailArrived());
@@ -109,10 +102,10 @@ public class MainGuiController implements Initializable {
 
         //Bindings
 
-        countNewMail.textProperty().bind(mail.countNewMailProperty());
+        action.textProperty().bind(this.model.clientOperationProperty());
 
         // Binding tableArrived
-        stateMail.setCellValueFactory(cellData -> cellData.getValue().stateNewMailProperty());
+        stateMail.setCellValueFactory(cellData -> cellData.getValue().isUnreadProperty());
         dateArrived.setCellValueFactory(cellData -> cellData.getValue().timeProperty());
         sender.setCellValueFactory(cellData -> cellData.getValue().senderProperty());
         objectArrived.setCellValueFactory(cellData -> cellData.getValue().subjectProperty());
@@ -146,8 +139,8 @@ public class MainGuiController implements Initializable {
     //Ricezione mail su evento button Receive
     @FXML
     public void handleReceive(){
-        mail.setCountNewMail("Loading mail from server....");
-        new ReceiveThread(mail, false).start();
+        model.setClientOperation("Loading mail from server....");
+        new ReceiveThread(model, false).start();
 
     }
 
@@ -155,13 +148,15 @@ public class MainGuiController implements Initializable {
     @FXML
     public void handleDelete() {
         // 0 - arrived, 1 - sent
+        model.setClientOperation(action.getText()+","+" "+ "Deleting mail selected");
+
         int tabIndex = ((TabPane)tableArrived.getParent().getParent().getParent()).getSelectionModel().getSelectedIndex();
 
         if (selectedEmail != null){
             if(tabIndex == 0)
-                new DeleteThread(DeleteThread.Selection.ARRIVED, mail, selectedEmail).start();
+                new DeleteThread(DeleteThread.Selection.ARRIVED, model, selectedEmail).start();
             else
-                new DeleteThread(DeleteThread.Selection.SENT, mail, selectedEmail).start();
+                new DeleteThread(DeleteThread.Selection.SENT, model, selectedEmail).start();
         }
     }
 
@@ -194,11 +189,11 @@ public class MainGuiController implements Initializable {
         modal_dialog.initModality(Modality.WINDOW_MODAL);
         modal_dialog.initOwner(primaryStage);
         Scene scene = new Scene(root);
-        modal_dialog.setTitle("Client posta "+mail.getCasella());
+        modal_dialog.setTitle("Client posta "+ model.getCasella());
 
         ModalEmailController mc = (ModalEmailController) loader.getController();
         commandEvent=((Button)event.getSource()).getText();
-        mc.initModel(this.mail,selectedEmail, commandEvent, modal_dialog);
+        mc.initModel(this.model,selectedEmail, commandEvent, modal_dialog, action);
         modal_dialog.setScene(scene);
         modal_dialog.show();
     }
@@ -214,17 +209,14 @@ public class MainGuiController implements Initializable {
             modal_dialog.initModality(Modality.WINDOW_MODAL);
             modal_dialog.initOwner(primaryStage);
             Scene scene = new Scene(root);
-            //modal_dialog.setTitle("Nuovo messaggio");
-            modal_dialog.setTitle("Client posta "+mail.getCasella());
+            modal_dialog.setTitle("Client posta "+ model.getCasella());
             ModalEmailController mc = (ModalEmailController) loader.getController();
             commandEvent="MOUSEEVENT";
-            mc.initModel(this.mail,selectedEmail, commandEvent, modal_dialog);
+            mc.initModel(this.model,selectedEmail, commandEvent, modal_dialog, action);
             modal_dialog.setScene(scene);
             modal_dialog.show();
         }
     }
-
-
 
 
     @Override
@@ -232,7 +224,7 @@ public class MainGuiController implements Initializable {
         panelEmailDetail.setVisible(false);
         tableArrived.setPlaceholder(new Label("No mail to display"));
         tableSent.setPlaceholder(new Label("No mail to display"));
-        countNewMail.setText("No new mail");
+        action.setText("");
         replayMail.setDisable(true);
         replayAllMail.setDisable(true);
         deleteMail.setDisable(true);

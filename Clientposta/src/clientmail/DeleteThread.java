@@ -33,6 +33,11 @@ public class DeleteThread extends Thread {
         Socket s;
         Boolean found=false;
         File f = null;
+        try{
+            sleep (3000);
+        }catch(InterruptedException e){
+            e.printStackTrace();
+        }
 
             try {
                 LOGGER.info("connecting to server...");
@@ -55,7 +60,6 @@ public class DeleteThread extends Thread {
                         LOGGER.debug("connected. Sending delete command.."+" mailId "+mailDelete.getId());
                         clientPrint.println("Delete "+selection.toString() );
                         clientPrint.println(mailDelete.getId());
-                        //clientObjOut.writeObject(mailDelete);
                         String res = clientIn.nextLine();
                         clientPrint.println("QUIT");
 

@@ -2,17 +2,14 @@ package clientmail;
 
 import commons.Account;
 import commons.FileHandler;
-import commons.Utilities;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import commons.EMail;
 
-import java.io.*;
 import java.net.Socket;
 import java.util.Properties;
-import java.util.Scanner;
 import java.util.concurrent.Semaphore;
 
 public class ClientModel {
@@ -32,28 +29,17 @@ public class ClientModel {
     public final Object lock = new Object();
     public Semaphore sem= new Semaphore(1);
 
-    //Property label connection
-    private StringProperty connection=new SimpleStringProperty();
-    public StringProperty connectionProperty() {
-        return this.connection;
-    }
-    public String getConnection() {
-        return this.connectionProperty().get();
-    }
-    public  void setConnection (String d) {
-        this.connectionProperty().set(d);
-    }
 
-    //Property label contatore nuove mail
-    private StringProperty countNewMail=new SimpleStringProperty("no new mail");
-    public StringProperty countNewMailProperty() {
-        return this.countNewMail;
+    //Property label client action
+    private StringProperty clientOperation=new SimpleStringProperty("Waiting for command");
+    public StringProperty clientOperationProperty() {
+        return this.clientOperation;
     }
-    public String getCountNewMail() {
-        return this.countNewMailProperty().get();
+    public String getClientOperation() {
+        return this.clientOperationProperty().get();
     }
-    public  void setCountNewMail (String d) {
-        this.countNewMailProperty().set(d);
+    public  void setClientOperation (String d) {
+        this.clientOperationProperty().set(d);
     }
 
 
@@ -62,7 +48,7 @@ public class ClientModel {
         //carico le properties e inizializzo
         this.props = props;
         //leggo l'account
-        setCountNewMail("No new mail");
+        setClientOperation("Waiting for command");
         this.casella = new Account(props.getProperty("account.name"),props.getProperty("account.surname"),props.getProperty("account.email"));
         this.host = props.getProperty("server.host");
         this.port = Integer.valueOf(props.getProperty("server.port"));

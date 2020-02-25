@@ -1,13 +1,11 @@
 package clientmail;
 
 import commons.Utilities;
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextArea;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.stage.Stage;
 import commons.EMail;
 
@@ -21,6 +19,7 @@ public class ModalEmailController implements Initializable {
     Stage stage = null;
     String command;
     EMail mailsel;
+    Label action;
 
     @FXML
     private TextField valueSender;
@@ -36,10 +35,11 @@ public class ModalEmailController implements Initializable {
     private Button send;
 
 
-    public void initModel(ClientModel m, EMail mail, String b, Stage s) {
+    public void initModel(ClientModel m, EMail mail, String b, Stage s, Label action) {
         this.model = m;
         this.command=b;
         this.stage = s;
+        this.action=action;
         switch (command){
             case "NEW":
                 valueSender.setText(model.getCasella());
@@ -99,7 +99,7 @@ public class ModalEmailController implements Initializable {
                     valueRecipients.setDisable(true);
                     valueRecipients.setStyle("-fx-opacity: 1;");
                     valueText.setText(mailsel.getText());
-                    valueText.setDisable(true);
+                    valueText.setEditable(false);
                     valueText.setStyle("-fx-opacity: 1;");
                     send.setDisable(true);
                     break;
@@ -112,13 +112,27 @@ public class ModalEmailController implements Initializable {
     @FXML
     public void handleSend(ActionEvent event){
 
+        //controllo correttezza indirizzo destinatario lato client
+
+        while(!EMail.recipientsValid(valueRecipients.getText())){
+            Platform.runLater(
+                    () -> {
+                        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                        alert.setHeaderText("Mail address not valid- please check before to try again");
+                        alert.show();
+                    }
+            );
+        }
+
         EMail email = new EMail("", Utilities.dateString(),
                 model.getCasella(),
                 valueRecipients.getText(),
                 valueObject.getText(),
-                valueText.getText());
+                valueText.getText(),
+                "false");
 
 
+        model.setClientOperation(action.getText()+","+" "+ "Sending mail");
         new SendThread(model,email).start();
         this.stage.close();
     }

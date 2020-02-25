@@ -11,6 +11,8 @@ import java.net.Socket;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import commons.Account;
 
 public class ServerModel {
@@ -41,6 +43,11 @@ public class ServerModel {
     Map<String, Account> accounts=new HashMap<>();
     Map<String, FileHandler> arrivedFileHandler=new HashMap<String, FileHandler>();
     Map<String, FileHandler> sentFileHandler=new HashMap<String, FileHandler>();
+
+
+
+    //Generazione ID mail univoci in mutua esclusione
+    private AtomicInteger countId;
 
 
     //metodi per avviare e terminare la connessione del server
@@ -132,9 +139,34 @@ public class ServerModel {
         //System.out.println(accounts.toString());
     }
 
+    public void loadNextId()throws FileNotFoundException, Exception  {
+        File f=new File("./data/generateId.csv");
+
+        if(f.exists()){
+            if(f.length()==0)
+            countId=new AtomicInteger();
+        } else{
+            Scanner rr = new Scanner(f);
+            while( rr.hasNextLine()) {
+                countId=new AtomicInteger(rr.nextInt());
+            }
+            rr.close();
+        }
+
+    }
+
+
+    public void saveId()throws FileNotFoundException, Exception{
+        PrintWriter saveId =new PrintWriter (new FileWriter("./data/generateId.csv"));
+        saveId.println(countId.get());
+        saveId.close();
+
+
+    }
+
+
     public String nextId() {
-        //TODO implementare ID
-        return UUID.randomUUID().toString();
+        return ""+ countId.getAndIncrement();
     }
 }
 

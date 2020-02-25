@@ -29,6 +29,11 @@ public class SendThread extends Thread {
 
     public void run() {
         Socket s;
+        try{
+            sleep (3000);
+        }catch(InterruptedException e){
+            e.printStackTrace();
+        }
 
         try {
             LOGGER.debug("connection to "+model.host+":"+model.port);

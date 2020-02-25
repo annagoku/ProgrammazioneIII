@@ -86,13 +86,15 @@ public class ReceiveThread extends Thread {
                                         model.sem.acquire();
                                         model.getMailArrived().addAll(list);
                                         if(list.size()>0) {
-                                            model.setCountNewMail(Integer.toString(list.size()));
                                             Alert alert = new Alert(Alert.AlertType.INFORMATION);
                                             alert.setHeaderText(list.size() + " new mail"+(list.size()>1 ? "s!":"!"));
                                             alert.show();
                                         }
                                         else {
-                                            model.setCountNewMail("No new mail");
+                                            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                                            alert.setHeaderText("No new mail");
+                                            alert.show();
+
                                         }
                                     } catch (InterruptedException e) {
                                         e.printStackTrace();
@@ -116,7 +118,6 @@ public class ReceiveThread extends Thread {
                 e.printStackTrace();
                 Platform.runLater(() -> {
                     synchronized (model.lock) {
-                        model.setCountNewMail("No new mail");
                         Alert alert = new Alert(Alert.AlertType.ERROR);
                         alert.setHeaderText("Error on receive mail");
                         alert.setContentText(e.getMessage());
@@ -128,7 +129,6 @@ public class ReceiveThread extends Thread {
             e.printStackTrace();
             Platform.runLater(() -> {
                 synchronized (model.lock) {
-                    model.setCountNewMail("No new mail");
                     Alert alert = new Alert(Alert.AlertType.ERROR);
                     alert.setHeaderText("Cannot connect to server");
                     alert.setContentText(e.getMessage());

@@ -140,12 +140,6 @@ public class ClientHandlerThread extends Thread{
                                             LOGGER.debug("updating arrived file for "+receiver);
 
                                             FileHandler receiverArrivedFile = model.arrivedFileHandler.get(receiver);
-                                            /*
-                                            receiverAccount.getWriteFileArrived().lock();
-                                            saveMailArrived = new PrintWriter(new FileWriter("./data/"+receiver+"/"+receiver+"_arrived.csv", true), true);
-                                            saveMailArrived.println(mailToSend.toString());
-                                            saveMailArrived.close();
-                                            receiverAccount.getWriteFileArrived().lock();*/
                                             receiverArrivedFile.add(mailToSend);
                                         }else{
                                             String textReply= "Receiver does not exist";
@@ -155,11 +149,6 @@ public class ClientHandlerThread extends Thread{
 
                                             FileHandler senderArrivedFile = model.arrivedFileHandler.get(localAccount.getEmail());
                                             senderArrivedFile.add(errorReply);
-                                            /*localAccount.getWriteFileArrived().lock();
-                                            saveMailArrived = new PrintWriter(new FileWriter("./data/"+localAccount.getEmail()+"/"+localAccount.getEmail()+"_arrived.csv", true), true);
-                                            saveMailArrived.println(errorReply.toString());
-                                            saveMailArrived.close();
-                                            localAccount.getWriteFileArrived().unlock();*/
                                         }
 
                                     }
@@ -168,11 +157,6 @@ public class ClientHandlerThread extends Thread{
 
                                     FileHandler senderSentFile = model.sentFileHandler.get(localAccount.getEmail());
                                     senderSentFile.add(mailToSend);
-                                    /*localAccount.getWriteFileSent().lock();
-                                    saveMailSent = new PrintWriter(new FileWriter("./data/"+localAccount.getEmail()+"/"+localAccount.getEmail()+"_sent.csv", true), true);
-                                    saveMailSent.println(mailToSend.toString());
-                                    saveMailSent.close();
-                                    localAccount.getWriteFileSent().unlock();*/
                                 }catch (Exception e) {
                                     e.printStackTrace();
                                     serverAnswer.println("Error: "+e.getMessage());
@@ -192,20 +176,9 @@ public class ClientHandlerThread extends Thread{
 
                                     switch (selection){
                                         case "ARRIVED":
-                                            /*localAccount.getWriteFileArrived().lock();
-                                            System.out.println(Thread.currentThread().getName()+" ("+ip+") locked file arrived: "+localAccount.getEmail());
-
-                                            list=Utilities.loadMailFromCSV("./data/"+client.getEmail()+"/"+client.getEmail()+"_arrived.csv");
-                                            Utilities.removeFromListAndSaveFile(list,"./data/"+client.getEmail()+"/"+client.getEmail()+"_arrived.csv" , mailToDelete);
-                                            localAccount.getWriteFileArrived().unlock();*/
                                             model.arrivedFileHandler.get(localAccount.getEmail()).remove(mailToDelete);
                                             break;
                                         case "SENT":
-                                            /*localAccount.getWriteFileSent().lock();
-                                            File fs=new File("./data/"+client.getEmail()+"/"+client.getEmail()+"_sent.csv");
-                                            list=Utilities.loadMailFromCSV("./data/"+client.getEmail()+"/"+client.getEmail()+"_sent.csv");
-                                            Utilities.removeFromListAndSaveFile(list,"./data/"+client.getEmail()+"/"+client.getEmail()+"_sent.csv" , mailToDelete);
-                                            localAccount.getWriteFileSent().unlock();*/
                                             model.sentFileHandler.get(localAccount.getEmail()).remove(mailToDelete);
 
                                             break;

@@ -1,5 +1,7 @@
 package commons;
 
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 
@@ -13,7 +15,7 @@ public class EMail implements Serializable {
 
     public static String EMAIL_PATTERN =  "^[\\w-_\\.+]*[\\w-_\\.]\\@([\\w]+\\.)+[\\w]+[\\w]$";
 
-    private transient  StringProperty stateNewMail= new SimpleStringProperty();
+    private transient StringProperty isUnread = new SimpleStringProperty();
     private transient StringProperty id=new SimpleStringProperty();
     private transient StringProperty sender=new SimpleStringProperty();
     private transient StringProperty recipients=new SimpleStringProperty();
@@ -22,15 +24,13 @@ public class EMail implements Serializable {
     private transient StringProperty time= new SimpleStringProperty();
 
 
-    //Property stateNewMail
-    public  StringProperty stateNewMailProperty() {
-        return this.stateNewMail;
+    //Property state read/Unread
+    public  StringProperty isUnreadProperty() { return this.isUnread; }
+    public String getisUnread() {
+        return this.isUnreadProperty().get();
     }
-    public String getStateNewMail() {
-        return this.stateNewMailProperty().get();
-    }
-    public void setStateNewMail (String m) {
-        this.stateNewMailProperty().set(m);
+    public void setIsUnread (String b) {
+        this.isUnreadProperty().set(b);
     }
 
 
@@ -108,13 +108,13 @@ public class EMail implements Serializable {
 
     //Costruttore
     public EMail(String id, String time, String sender, String recipients, String subject, String text ) {
-        setStateNewMail("");
         setId (id);
         setTime(time);
         setSender(sender);
         setRecipients(recipients);
         setSubject(subject);
         setText(text);
+        setIsUnread("false");
 
     }
 
@@ -158,7 +158,7 @@ public class EMail implements Serializable {
 
     private void writeObject(ObjectOutputStream s) throws IOException {
         s.defaultWriteObject();
-        s.writeUTF(stateNewMailProperty().getValueSafe()); // can't be null so use getValueSafe that returns empty string if it's null
+        s.writeUTF(isUnreadProperty().getValueSafe()); // can't be null so use getValueSafe that returns empty string if it's null
         s.writeUTF(idProperty().getValueSafe());
         s.writeUTF(senderProperty().getValueSafe());
         s.writeUTF(recipientsProperty().getValueSafe());
@@ -170,7 +170,7 @@ public class EMail implements Serializable {
     private void readObject(ObjectInputStream s) throws IOException, ClassNotFoundException {
         s.defaultReadObject();
         initInstance();
-        stateNewMailProperty().set(s.readUTF());
+        isUnreadProperty().set(s.readUTF());
         idProperty().set(s.readUTF());
         senderProperty().set(s.readUTF());
         recipientsProperty().set(s.readUTF());
@@ -180,7 +180,7 @@ public class EMail implements Serializable {
     }
 
     private void initInstance() {
-        stateNewMail=new SimpleStringProperty();
+        isUnread=new SimpleStringProperty();
         id=new SimpleStringProperty();
         sender=new SimpleStringProperty();
         recipients=new SimpleStringProperty();
