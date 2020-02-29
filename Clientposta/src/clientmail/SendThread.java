@@ -40,8 +40,8 @@ public class SendThread extends Thread {
             s = new Socket(model.host, model.port);
             try {
                 OutputStream out = s.getOutputStream();
-                InputStream in = s.getInputStream();
                 ObjectOutputStream clientObjOut = new ObjectOutputStream(out);
+                InputStream in = s.getInputStream();
                 ObjectInputStream clientObjIn = new ObjectInputStream(in);
                 Scanner clientIn = new Scanner(in);
                 PrintWriter clientPrint = new PrintWriter(out, true);
@@ -53,15 +53,15 @@ public class SendThread extends Thread {
 
                 if (serverAnswer.equals("Ready")) {
 
-                    LOGGER.debug("sending email...");
+                    LOGGER.debug("sending email... "+mailSend.toString());
                     clientPrint.println("Send");
-                    clientObjOut.writeObject(mailSend);
+                    clientPrint.println(mailSend.toString());
 
                     String res = clientIn.nextLine();
                     clientPrint.println("QUIT");
 
                     Matcher m = patternDone.matcher(res);
-                    LOGGER.debug("Server ansewer ->" +res);
+                    LOGGER.debug("Server answer ->" +res);
 
                     if(m.matches()) {
                         String mailID = m.group(1);
@@ -112,6 +112,15 @@ public class SendThread extends Thread {
                             alert.setHeaderText("Cannot send mail");
                             alert.setContentText(e.getMessage());
                             alert.show();
+                        }
+                    }
+            );
+        }
+        finally {
+            Platform.runLater(
+                    () -> {
+                        synchronized (model.lock) {
+                            model.setClientOperation("");
                         }
                     }
             );

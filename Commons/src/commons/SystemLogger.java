@@ -5,12 +5,12 @@ public class SystemLogger {
     private Class theClass;
     private int logLevel = LEVEL_OFF;
 
-    public static int LEVEL_OFF = 0;
-    public static int LEVEL_FATAL = 1;
-    public static int LEVEL_ERROR = 2;
-    public static int LEVEL_WARN = 3;
-    public static int LEVEL_INFO = 4;
-    public static int LEVEL_DEBUG = 5;
+    public static int LEVEL_OFF     = 0;
+    public static int LEVEL_FATAL   = 1;
+    public static int LEVEL_ERROR   = 2;
+    public static int LEVEL_WARN    = 3;
+    public static int LEVEL_INFO    = 4;
+    public static int LEVEL_DEBUG   = 5;
 
 
 

@@ -31,7 +31,7 @@ public class ClientModel {
 
 
     //Property label client action
-    private StringProperty clientOperation=new SimpleStringProperty("Waiting for command");
+    private StringProperty clientOperation=new SimpleStringProperty("");
     public StringProperty clientOperationProperty() {
         return this.clientOperation;
     }
@@ -48,7 +48,6 @@ public class ClientModel {
         //carico le properties e inizializzo
         this.props = props;
         //leggo l'account
-        setClientOperation("Waiting for command");
         this.casella = new Account(props.getProperty("account.name"),props.getProperty("account.surname"),props.getProperty("account.email"));
         this.host = props.getProperty("server.host");
         this.port = Integer.valueOf(props.getProperty("server.port"));

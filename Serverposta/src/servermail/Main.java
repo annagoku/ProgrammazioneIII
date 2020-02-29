@@ -1,6 +1,7 @@
 package servermail;
 
 import commons.SystemLogger;
+import commons.Utilities;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.event.EventHandler;
@@ -27,13 +28,16 @@ public class Main extends Application {
         ServerModel model= new ServerModel();
         serverController.init(model);
 
+        //Runtime.getRuntime().addShutdownHook();
+
         primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
             @Override
             public void handle(WindowEvent event) {
                 LOGGER.debug("window close");
                 try {
                     model.endconnect();
-                } catch (IOException e) {
+                    model.saveId();
+                } catch (Exception e) {
                     LOGGER.error(e.getMessage());
                     e.printStackTrace();
                 }

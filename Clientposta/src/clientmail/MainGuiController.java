@@ -22,10 +22,11 @@ import java.util.ResourceBundle;
 
 import commons.EMail;
 import javafx.stage.WindowEvent;
+import javafx.util.Callback;
 
 public class MainGuiController implements Initializable {
 
-    //Configure Table
+    //Configure Table arrived
     @FXML
     private TableView<EMail> tableArrived;
     @FXML
@@ -37,6 +38,7 @@ public class MainGuiController implements Initializable {
     @FXML
     private TableColumn<EMail, String> objectArrived;
 
+    //Configure Table sent
     @FXML
     private TableView<EMail> tableSent;
     @FXML
@@ -96,12 +98,16 @@ public class MainGuiController implements Initializable {
         }
         this.model = model;
         this.primaryStage = pm;
+
+
+
+
         //aggancio l'observable list alla tabella
         tableArrived.setItems(model.getMailArrived());
+
         tableSent.setItems(model.getMailSent());
 
-        //Bindings
-
+        //Bindings for operation on going
         action.textProperty().bind(this.model.clientOperationProperty());
 
         // Binding tableArrived
@@ -109,6 +115,7 @@ public class MainGuiController implements Initializable {
         dateArrived.setCellValueFactory(cellData -> cellData.getValue().timeProperty());
         sender.setCellValueFactory(cellData -> cellData.getValue().senderProperty());
         objectArrived.setCellValueFactory(cellData -> cellData.getValue().subjectProperty());
+
 
 
         // Binding tableSent
@@ -121,8 +128,18 @@ public class MainGuiController implements Initializable {
         tableArrived.getSelectionModel().selectedItemProperty().addListener(
                 (observable, oldValue, newValue) -> showMailDetails(newValue));
 
+
+
+
+
         tableSent.getSelectionModel().selectedItemProperty().addListener(
                 (observable, oldValue, newValue) -> showMailDetails(newValue));
+
+
+
+
+
+
 
         // handles window close -> shutdown application
         primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
@@ -140,6 +157,7 @@ public class MainGuiController implements Initializable {
     @FXML
     public void handleReceive(){
         model.setClientOperation("Loading mail from server....");
+
         new ReceiveThread(model, false).start();
 
     }
@@ -148,7 +166,7 @@ public class MainGuiController implements Initializable {
     @FXML
     public void handleDelete() {
         // 0 - arrived, 1 - sent
-        model.setClientOperation(action.getText()+","+" "+ "Deleting mail selected");
+        model.setClientOperation("Deleting mail selected");
 
         int tabIndex = ((TabPane)tableArrived.getParent().getParent().getParent()).getSelectionModel().getSelectedIndex();
 

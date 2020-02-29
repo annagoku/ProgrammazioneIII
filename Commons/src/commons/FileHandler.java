@@ -29,21 +29,25 @@ public class FileHandler {
         }
     }
 
-    public void add(EMail eMail) {
+    public void add(String id, String eMail) {
         PrintWriter pw = null;
         writeLock.lock();
         try {
             pw = new PrintWriter(new FileWriter(f, true), true);
-            pw.println(eMail.toString());
+            pw.println(eMail);
 
         } catch (IOException e) {
-            System.out.println(getClass().getName()+" cannot add email "+eMail.getId()+" to file "+filename+" "+e.getMessage());
+            System.out.println(getClass().getName()+" cannot add email "+id+" to file "+filename+" "+e.getMessage());
         } finally {
             if(pw != null) {
                 pw.close();
             }
             writeLock.unlock();
         }
+    }
+
+    public void add(EMail eMail) {
+        add(eMail.getId(), eMail.toString());
     }
 
     public void addAll(List<EMail> l) {
@@ -98,8 +102,7 @@ public class FileHandler {
                 mailIn = new Scanner(f);
                 while (mailIn.hasNextLine()) {
                     String tmp = mailIn.nextLine();
-                    Scanner l = new Scanner(tmp).useDelimiter("\\s*;\\s*");
-                    EMail mailA = new EMail(l.next(), l.next(), l.next(), l.next(), l.next(), Utilities.parseText(l.next()));
+                    EMail mailA = EMail.parseEmail(tmp);
 
                     if(!mailID.equals(mailA.getId())){
                         list.add(mailA);
@@ -107,7 +110,7 @@ public class FileHandler {
                     else {
                         deleted = true;
                     }
-                    l.close();
+
                 }
                 pw = new PrintWriter(new FileWriter(f), true);
                 for(EMail obj: list)
@@ -143,9 +146,8 @@ public class FileHandler {
                 mailIn = new Scanner(f);
                 while (mailIn.hasNextLine()) {
                     String tmp = mailIn.nextLine();
-                    Scanner l = new Scanner(tmp).useDelimiter("\\s*;\\s*");
-                    EMail mail = new EMail(l.next(), l.next(), l.next(), l.next(), l.next(), Utilities.parseText(l.next()));
-                    l.close();
+                    EMail mail = EMail.parseEmail(tmp);
+
 
                     if(timeStamp != null) {
                         Date emailDate = Utilities.DATE_FORMAT.parse(mail.getTime());
@@ -154,6 +156,53 @@ public class FileHandler {
                     }
                     else {
                         list.add(mail);
+                    }
+
+
+                }
+
+            }
+
+        } catch (FileNotFoundException | ParseException e) {
+            System.out.println(getClass().getName()+" cannot get list from file "+filename+" "+e.getMessage());
+        } finally {
+            if(mailIn!= null) {
+                mailIn.close();
+            }
+            readLock.unlock();
+        }
+        return list;
+    }
+
+    public List<String> readListString() {
+        return readListString(null);
+    }
+
+    public List<String> readListString(String timeStamp) {
+        Scanner mailIn =null;
+        List<String> list = new ArrayList<>();
+
+
+
+        readLock.lock();
+        try {
+            Date timestampDate = null;
+            if(timeStamp != null)
+                timestampDate= Utilities.DATE_FORMAT.parse(timeStamp);
+
+            if (f.length()!=0) {
+                mailIn = new Scanner(f);
+                while (mailIn.hasNextLine()) {
+                    String tmp = mailIn.nextLine();
+                    EMail mail = EMail.parseEmail(tmp);
+
+                    if(timeStamp != null) {
+                        Date emailDate = Utilities.DATE_FORMAT.parse(mail.getTime());
+                        if(emailDate.after(timestampDate))
+                            list.add(tmp);
+                    }
+                    else {
+                        list.add(tmp);
                     }
 
 

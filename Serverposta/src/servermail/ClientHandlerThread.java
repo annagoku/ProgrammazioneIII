@@ -3,6 +3,7 @@ package servermail;
 import java.io.*;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Scanner;
 import java.util.regex.Matcher;
@@ -46,6 +47,7 @@ public class ClientHandlerThread extends Thread{
     public void run() {
         String email = "";
         try {
+            Thread.sleep(1500);
             LOGGER.info("running for client "+ip);
             Log connectLog= new Log ("Connection from client", email,ServerModel.dateToString(), ip  );
             model.logHistory.add(connectLog);
@@ -99,16 +101,22 @@ public class ClientHandlerThread extends Thread{
                             case "receive":
                                 LOGGER.debug("---------------receive case: ");
                                 String timestamp=param;
-                                List<EMail> arrived=null;
+                                List<String> arrived=null;
                                 try {
                                     if("".equals(param))
-                                        arrived = model.arrivedFileHandler.get(localAccount.getEmail()).readList();
+                                        arrived = model.arrivedFileHandler.get(localAccount.getEmail()).readListString();
                                     else
-                                        arrived = model.arrivedFileHandler.get(localAccount.getEmail()).readList(timestamp);
+                                        arrived = model.arrivedFileHandler.get(localAccount.getEmail()).readListString(timestamp);
 
                                     serverAnswer.println("Done");
+                                    model.logHistory.add(
+                                            new Log ("Sent response (Done) to client", client.getEmail(),ServerModel.dateToString(), ip  ));
                                     LOGGER.debug("sending mail list to client: "+arrived);
+                                    //serverAnswer.println(Collections.);
                                     serverObjOut.writeObject(arrived);
+                                    model.logHistory.add(
+                                            new Log ("Sent email list (size "+arrived.size()+") to client", client.getEmail(),ServerModel.dateToString(), ip  ));
+
                                 }
                                 catch (Exception e) {
                                     serverAnswer.println("Error: "+e.getMessage());
@@ -123,14 +131,20 @@ public class ClientHandlerThread extends Thread{
                                 PrintWriter saveMailSent;
                                 try{
                                     LOGGER.debug("reading mail to send from client... ");
-                                    mailToSend=(EMail)serverObjIn.readObject();
-                                    LOGGER.debug("mail to send: "+mailToSend);
+                                    String mailString = inputLine.nextLine();
+                                    LOGGER.debug("parsing -> "+mailString);
+
+                                    mailToSend=EMail.parseEmail(mailString);
+                                    LOGGER.debug("parsed  -> "+mailToSend.toString());
                                     tpm=mailToSend.getRecipients();
                                     Scanner l =new Scanner(tpm).useDelimiter(("\\s*,\\s*"));
                                     String mailID = model.nextId();
-                                    LOGGER.debug("sent answer: Done"+mailID);
+                                    LOGGER.debug("sent answer: Done "+mailID);
                                     serverAnswer.println("Done "+mailID);
+                                    model.logHistory.add(
+                                            new Log ("Sent response (Done "+mailID+") to client", client.getEmail(),ServerModel.dateToString(), ip  ));
                                     mailToSend.setId(mailID);
+
 
                                     while (l.hasNext()){
                                         receiver=l.next();
@@ -142,13 +156,14 @@ public class ClientHandlerThread extends Thread{
                                             FileHandler receiverArrivedFile = model.arrivedFileHandler.get(receiver);
                                             receiverArrivedFile.add(mailToSend);
                                         }else{
-                                            String textReply= "Receiver does not exist";
+                                            String textReply= "Receiver \""+receiver+"\" does not exist";
                                             LOGGER.debug("receiver not found "+receiver);
                                             LOGGER.debug("sending notification back to "+mailToSend.getSender());
-                                            EMail errorReply = new EMail(mailID, Utilities.dateString(), ServerModel.MAIL_SERVER, mailToSend.getSender(), "Message not delivered", textReply + "\n\n\n"+mailToSend.getText());
+                                            EMail errorReply = new EMail(mailID, Utilities.dateString(), ServerModel.MAIL_SERVER, mailToSend.getSender(), "Message not delivered", textReply + Utilities.getReplyText(mailToSend, "Original message", "> "));
 
                                             FileHandler senderArrivedFile = model.arrivedFileHandler.get(localAccount.getEmail());
                                             senderArrivedFile.add(errorReply);
+                                            LOGGER.debug("notification sent to "+mailToSend.getSender());
                                         }
 
                                     }
@@ -189,6 +204,8 @@ public class ClientHandlerThread extends Thread{
                                     }
                                     LOGGER.debug("sending Done to client");
                                     serverAnswer.println("Done");
+                                    model.logHistory.add(
+                                            new Log ("Sent response (Done) to client", client.getEmail(),ServerModel.dateToString(), ip  ));
                                     LOGGER.debug("end delete");
                                 }
                                 catch(Exception e){
@@ -223,13 +240,7 @@ public class ClientHandlerThread extends Thread{
 
 
             }
-
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-            String details = e.getClass().getName()+" "+e.getMessage();
-            LOGGER.error("Bad request format: "+details);
-            model.logHistory.add(
-                    new Log ("Bad request format ("+e.getMessage()+")", email, ServerModel.dateToString(), ip  ));
+            new ActiveThreadsUpdater(model).start();
         }
         catch (Exception e){
             e.printStackTrace();

@@ -11,17 +11,17 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.*;
 
-public class EMail implements Serializable {
+public class EMail {
 
     public static String EMAIL_PATTERN =  "^[\\w-_\\.+]*[\\w-_\\.]\\@([\\w]+\\.)+[\\w]+[\\w]$";
 
-    private transient StringProperty isUnread = new SimpleStringProperty();
-    private transient StringProperty id=new SimpleStringProperty();
-    private transient StringProperty sender=new SimpleStringProperty();
-    private transient StringProperty recipients=new SimpleStringProperty();
-    private transient StringProperty subject =new SimpleStringProperty();
-    private transient StringProperty text= new SimpleStringProperty();
-    private transient StringProperty time= new SimpleStringProperty();
+    private  StringProperty isUnread = new SimpleStringProperty();
+    private  StringProperty id=new SimpleStringProperty();
+    private  StringProperty sender=new SimpleStringProperty();
+    private  StringProperty recipients=new SimpleStringProperty();
+    private  StringProperty subject =new SimpleStringProperty();
+    private  StringProperty text= new SimpleStringProperty();
+    private  StringProperty time= new SimpleStringProperty();
 
 
     //Property state read/Unread
@@ -123,6 +123,25 @@ public class EMail implements Serializable {
         return getId()+";"+ getTime()+";"+getSender()+";"+getRecipients()+";"+ getSubject()+";"+Utilities.escapeText(getText());
     }
 
+    public static EMail parseEmail(String s) throws IllegalArgumentException {
+        try {
+            String[] tokens = s.split(";");
+            String id = tokens[0].trim();
+            String time = tokens[1].trim();
+            String sender = tokens[2].trim();
+            String recipients = tokens[3].trim();
+            String subject = tokens[4].trim();
+            String text = tokens[5].trim();
+            EMail e = new EMail(id, time, sender, recipients, subject, Utilities.parseText(text));
+
+            return e;
+        }
+        catch (Exception e) {
+            throw new IllegalArgumentException(e.getMessage(), e);
+        }
+
+    }
+
     /**
      * Controlla se un indirizzo email e' valido (
      * @param email
@@ -155,7 +174,7 @@ public class EMail implements Serializable {
         }
         return super.equals(obj);
     }
-
+/*
     private void writeObject(ObjectOutputStream s) throws IOException {
         s.defaultWriteObject();
         s.writeUTF(isUnreadProperty().getValueSafe()); // can't be null so use getValueSafe that returns empty string if it's null
@@ -187,5 +206,5 @@ public class EMail implements Serializable {
         subject=new SimpleStringProperty();
         text=new SimpleStringProperty();
         time=new SimpleStringProperty();
-    }
+    }*/
 }

@@ -2,6 +2,9 @@ package servermail;
 
 import commons.FileHandler;
 import commons.SystemLogger;
+import javafx.application.Platform;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
@@ -32,6 +35,18 @@ public class ServerModel {
 
     //Lista di connessioni client attive
     List<ClientHandlerThread> prec = new ArrayList<>();
+
+    //Property Numero di Thread attivi
+    private StringProperty activeThread=new SimpleStringProperty("No Thread active");
+    public StringProperty activeThreadProperty() {
+        return this.activeThread;
+    }
+    public String getActiveThread() {
+        return this.activeThreadProperty().get();
+    }
+    public  void setActiveThread (String d) {
+        this.activeThreadProperty().set(d);
+    }
 
 
     //gestione binding loglist_tableView
@@ -87,6 +102,7 @@ public class ServerModel {
                     LOGGER.info("new connection accepted... creating clientHandler");
                     ClientHandlerThread h = new ClientHandlerThread(listening, model);
                     prec.add(h);
+                    new ActiveThreadsUpdater(model).start();
                     h.start();
 
 
@@ -119,6 +135,7 @@ public class ServerModel {
     }
 
 
+
     //Caricamento elenco account all'avvio
 
     public void loadAccounts() throws FileNotFoundException, Exception {
@@ -136,21 +153,22 @@ public class ServerModel {
             dr.close();
         }
         rr.close();
-        //System.out.println(accounts.toString());
     }
 
     public void loadNextId()throws FileNotFoundException, Exception  {
         File f=new File("./data/generateId.csv");
 
         if(f.exists()){
-            if(f.length()==0)
-            countId=new AtomicInteger();
-        } else{
-            Scanner rr = new Scanner(f);
-            while( rr.hasNextLine()) {
-                countId=new AtomicInteger(rr.nextInt());
+            if(f.length()==0) {
+                countId = new AtomicInteger();
             }
-            rr.close();
+            else{
+                Scanner rr = new Scanner(f);
+                while( rr.hasNextLine()) {
+                    countId=new AtomicInteger(Integer.parseInt(rr.nextLine()));
+                }
+                rr.close();
+            }
         }
 
     }

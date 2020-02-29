@@ -24,8 +24,6 @@ public class Main extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception{
-        String casella = "diana.rossi@mymail.com";
-
         BorderPane root= new BorderPane();
         LOGGER.info("Loading UI");
         FXMLLoader listLoader = new FXMLLoader(getClass().getResource("ClientGraphicalInterface.fxml"));
@@ -42,7 +40,7 @@ public class Main extends Application {
         LOGGER.info("Initializing model");
 
         mainGuiController.initModel(model, primaryStage);
-        primaryStage.setTitle("Client posta "+casella);
+        primaryStage.setTitle("Client posta "+model.getCasella());
         primaryStage.setScene(new Scene(root, 800, 700));
         primaryStage.show();
 

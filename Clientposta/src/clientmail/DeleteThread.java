@@ -150,6 +150,12 @@ public class DeleteThread extends Thread {
                         }
                 );
         }
+        finally {
+            Platform.runLater(() -> {
+                synchronized (model.lock) {
+                    model.setClientOperation("");                }
+            });
+        }
     }
 
 

@@ -67,7 +67,13 @@ public class ModalEmailController implements Initializable {
                     valueSender.setStyle("-fx-opacity: 1;");
                     valueObject.setText(("R: ".concat(mailsel.getSubject())));
                     date.setText(Utilities.dateString());
-                    valueRecipients.setText(mailsel.getSender()+", "+mailsel.getRecipients());
+                    if(mailsel.getRecipients().trim().equals(model.getCasella())) {
+                        valueRecipients.setText(mailsel.getSender());
+                    }
+                    else {
+                        valueRecipients.setText(mailsel.getSender()+", "+Utilities.replyAllRecipients(mailsel.getRecipients(), model.getCasella()));
+                    }
+
                     valueText.setText(Utilities.getReplyText(mailsel));
                 }
                 break;
@@ -114,27 +120,26 @@ public class ModalEmailController implements Initializable {
 
         //controllo correttezza indirizzo destinatario lato client
 
-        while(!EMail.recipientsValid(valueRecipients.getText())){
-            Platform.runLater(
-                    () -> {
-                        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-                        alert.setHeaderText("Mail address not valid- please check before to try again");
-                        alert.show();
-                    }
-            );
+        if(!EMail.recipientsValid(valueRecipients.getText())){
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setHeaderText("Mail address not valid");
+            alert.setContentText("Please check before to try again");
+            alert.show();
+
+        }
+        else {
+            EMail email = new EMail("", Utilities.dateString(),
+                    model.getCasella(),
+                    valueRecipients.getText(),
+                    valueObject.getText(),
+                    valueText.getText());
+
+
+            model.setClientOperation("Sending mail");
+            new SendThread(model,email).start();
+            this.stage.close();
         }
 
-        EMail email = new EMail("", Utilities.dateString(),
-                model.getCasella(),
-                valueRecipients.getText(),
-                valueObject.getText(),
-                valueText.getText(),
-                "false");
-
-
-        model.setClientOperation(action.getText()+","+" "+ "Sending mail");
-        new SendThread(model,email).start();
-        this.stage.close();
     }
 
     @FXML

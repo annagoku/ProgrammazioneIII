@@ -9,8 +9,10 @@ import javafx.scene.control.Alert;
 import java.io.*;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.util.Collections;
 import java.util.List;
 import java.util.Scanner;
+import java.util.stream.Collectors;
 
 public class ReceiveThread extends Thread {
     private ClientModel model;
@@ -33,7 +35,8 @@ public class ReceiveThread extends Thread {
                     Thread.sleep(30000);
                 } catch (InterruptedException e) {
                 }
-                receiveLogic();
+                //receiveLogic();
+                new ReceiveThread(model, false);
             }
         }
         else {
@@ -55,8 +58,8 @@ public class ReceiveThread extends Thread {
             s = new Socket(model.host, model.port);
             try {
                 OutputStream out = s.getOutputStream();
-                InputStream in = s.getInputStream();
                 ObjectOutputStream clientObjOut = new ObjectOutputStream(out);
+                InputStream in = s.getInputStream();
                 ObjectInputStream clientObjIn = new ObjectInputStream(in);
                 Scanner clientIn = new Scanner(in);
                 PrintWriter clientPrint = new PrintWriter(out, true);
@@ -75,7 +78,9 @@ public class ReceiveThread extends Thread {
                     serverAnswer = clientIn.nextLine();
                     LOGGER.info(prefixLog+"server answer -> "+serverAnswer);
                     if(serverAnswer.equals("Done")) {
-                        List<EMail> list = (List<EMail>)clientObjIn.readObject();
+                        List<String> stringList = (List<String>)clientObjIn.readObject();
+                        List<EMail> list = Utilities.readNewEmailsFromStringList(stringList);
+
 
                         //aggiorna il file
                         model.getFileArrived().addAll(list);
@@ -136,6 +141,12 @@ public class ReceiveThread extends Thread {
                 }
             });
 
+        }
+        finally {
+            Platform.runLater(() -> {
+                synchronized (model.lock) {
+                    model.setClientOperation("");                }
+            });
         }
 
 

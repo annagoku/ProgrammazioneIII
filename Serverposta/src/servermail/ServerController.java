@@ -1,11 +1,14 @@
 package servermail;
 
 import commons.SystemLogger;
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.paint.Color;
+import javafx.stage.WindowEvent;
 
 
 import java.io.*;
@@ -24,6 +27,8 @@ public class ServerController implements Initializable {
         this.model=m;
         //aggancio l'observable list alla tabella
         logHistory.setItems(model.getLog());
+        //binding con activeThread
+        activeThread.textProperty().bind(model.activeThreadProperty());
 
         try {
             model.loadAccounts();
@@ -41,8 +46,12 @@ public class ServerController implements Initializable {
 
         try {
             model.loadNextId();
-        } catch (Exception e) {
+        } catch (FileNotFoundException e) {
             state.setText("Error: generateId file not found");
+            state.setTextFill(Color.RED);
+            connect.setDisable(true);
+        }catch (Exception e) {
+            state.setText("Error: on reading generateId from file");
             state.setTextFill(Color.RED);
             connect.setDisable(true);
         }
@@ -65,6 +74,8 @@ public class ServerController implements Initializable {
     private TableColumn<Log, String> ipClient;
     @FXML
     private Label state;
+    @FXML
+    private Label activeThread;
 
 
     @FXML
@@ -85,8 +96,17 @@ public class ServerController implements Initializable {
 
     }
 
-    public void handleclose(ActionEvent e){
+    public void handleclose(ActionEvent e) {
         LOGGER.debug("pressed Close button");
+        if(model.prec.size()>0) {
+            for (Thread t : model.prec) {
+                try {
+                    t.join();
+                }catch (InterruptedException j) {
+                    j.printStackTrace();
+                }
+            }
+        }
         try {
             model.endconnect();
             state.setText("Disconnect");
@@ -99,8 +119,6 @@ public class ServerController implements Initializable {
             state.setText("Disconnect error: "+ex.getMessage());
             state.setTextFill(Color.RED);
         }
-
-
     }
 
 
