@@ -6,7 +6,7 @@ import javafx.collections.ObservableList;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import commons.Account;
+
 
 public class SaveLogDaemonThread extends Thread {
     private ObservableList<Log> listLog;

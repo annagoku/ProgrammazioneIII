@@ -17,45 +17,37 @@ public abstract class Utilities {
     public static DateFormat DATE_FORMAT_MILLIS = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
 
 
-    /**
-     *
-     * @return String representing "now"
-     */
+
+
+      //@return String representing "now"
     public static String dateString() {
         return dateString(Calendar.getInstance().getTime());
     }
 
-    /**
-     *
-     * @param date
-     * @return String representing date
-     */
+    /* @param date
+       @return String representing date*/
+
     public static String dateString(Date date) {
         return DATE_FORMAT.format(date);
     }
 
-    /**
-     *
-     * @return String (format with millis) representing "now"
-     */
+     // @return String (format with millis) representing "now"
     public static String dateStringMillis() {
 
         return DATE_FORMAT_MILLIS.format(Calendar.getInstance().getTime());
     }
 
-    /**
-     *
-     * @param date
-     * @return String representing date (forma with millis)
-     */
+
+     /* @param date
+        @return String representing date (forma with millis)*/
     public static String dateStringMillis(Date date) {
         return DATE_FORMAT_MILLIS.format(date);
     }
 
     /**
-     * Loads an EMail list from csv file
-     *
-     * @param filename
+     /* Loads an EMail list from csv file
+
+      @param filename
      * @return
      * @throws Exception
      */
@@ -205,26 +197,9 @@ public abstract class Utilities {
 
         for (String s: stringList) {
             EMail e = EMail.parseEmail(s);
-            e.setIsUnread("true");
             list.add(e);
         }
         return list;
     }
 
-    /*public static void main (String [] args) {
-        String text = "Ciao \n Come stai?\nTutto bne?";
-        System.out.println("-------------");
-        System.out.println(text);
-
-        System.out.println("-------------");
-
-
-        System.out.println("prova escaping");
-        String textEscaped = escapeText(text);
-        System.out.println(textEscaped);
-        System.out.println("prova parsing");
-        System.out.println(parseText(textEscaped));
-
-
-    }*/
 }

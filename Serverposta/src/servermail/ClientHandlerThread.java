@@ -139,12 +139,11 @@ public class ClientHandlerThread extends Thread{
                                     tpm=mailToSend.getRecipients();
                                     Scanner l =new Scanner(tpm).useDelimiter(("\\s*,\\s*"));
                                     String mailID = model.nextId();
+                                    mailToSend.setId(mailID);
                                     LOGGER.debug("sent answer: Done "+mailID);
                                     serverAnswer.println("Done "+mailID);
                                     model.logHistory.add(
                                             new Log ("Sent response (Done "+mailID+") to client", client.getEmail(),ServerModel.dateToString(), ip  ));
-                                    mailToSend.setId(mailID);
-
 
                                     while (l.hasNext()){
                                         receiver=l.next();

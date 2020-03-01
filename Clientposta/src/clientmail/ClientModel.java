@@ -19,13 +19,11 @@ public class ClientModel {
     private FileHandler fileSent = null;
     private FileHandler fileArrived = null;
     private Account casella;
-    private String timestamp;
+    private String timestamp;// todo
     public String host;
     public int port;
-    public int count; // contatore nuove mail
-
-
     public Socket socket;
+    // Strumenti di sincronizzazione
     public final Object lock = new Object();
     public Semaphore sem= new Semaphore(1);
 
@@ -57,9 +55,8 @@ public class ClientModel {
         this.loadMailArrived();
         this.loadMailSent();
 
-        //new ReceiveThread(this, true).start();
-
-
+        //Thread Daemon per la ricezione periodica automatica di mail
+        new ReceiveThread(this, true).start();
     }
 
     public FileHandler getFileSent() {
@@ -84,7 +81,7 @@ public class ClientModel {
         return casella.getEmail();
     }
 
-    //caricamento all'avvio di mail ricevute e inviate salvate in txt
+    //caricamento all'avvio di mail ricevute e inviate salvate in csv
     public void loadMailArrived()  {
         try{
             mailArrived.addAll(fileArrived.readList());

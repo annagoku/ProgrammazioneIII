@@ -174,6 +174,7 @@ public class ServerModel {
     }
 
 
+    //Salvataggio progressivo ID in chiusura
     public void saveId()throws FileNotFoundException, Exception{
         PrintWriter saveId =new PrintWriter (new FileWriter("./data/generateId.csv"));
         saveId.println(countId.get());
@@ -181,7 +182,6 @@ public class ServerModel {
 
 
     }
-
 
     public String nextId() {
         return ""+ countId.getAndIncrement();

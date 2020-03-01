@@ -122,31 +122,30 @@ public class ReceiveThread extends Thread {
             } catch (Exception e) {
                 e.printStackTrace();
                 Platform.runLater(() -> {
-                    synchronized (model.lock) {
                         Alert alert = new Alert(Alert.AlertType.ERROR);
                         alert.setHeaderText("Error on receive mail");
                         alert.setContentText(e.getMessage());
                         alert.show();
-                    }
+
                 });
             }
         } catch (IOException e) {
             e.printStackTrace();
             Platform.runLater(() -> {
-                synchronized (model.lock) {
+
                     Alert alert = new Alert(Alert.AlertType.ERROR);
                     alert.setHeaderText("Cannot connect to server");
                     alert.setContentText(e.getMessage());
                     alert.show();
-                }
+
             });
 
         }
         finally {
             Platform.runLater(() -> {
-                synchronized (model.lock) {
+
                     model.setClientOperation("");                }
-            });
+            );
         }
 
 

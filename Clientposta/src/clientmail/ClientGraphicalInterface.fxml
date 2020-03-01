@@ -66,7 +66,6 @@
                      <children>
                         <TableView fx:id="tableArrived" layoutX="159.0" layoutY="-15.0" onMouseClicked="#handleActionMouse" prefHeight="188.0" prefWidth="770.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="5.0" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="5.0">
                           <columns>
-                            <TableColumn fx:id="stateMail" minWidth="8.799986839294434" prefWidth="50.40002727508545" text="State" visible="false" />
                             <TableColumn fx:id="dateArrived" minWidth="0.0" prefWidth="148.79998779296875" text="Date" />
                               <TableColumn fx:id="sender" prefWidth="289.59996032714844" text="From" />
                               <TableColumn fx:id="objectArrived" prefWidth="283.2000732421875" text="Object" />

@@ -31,6 +31,7 @@ public class ServerController implements Initializable {
         activeThread.textProperty().bind(model.activeThreadProperty());
 
         try {
+            //carica gli account
             model.loadAccounts();
         } catch (FileNotFoundException e) {
             state.setText("Error: accounts file not found");
@@ -45,6 +46,7 @@ public class ServerController implements Initializable {
         }
 
         try {
+            //carica il file generatore di ID
             model.loadNextId();
         } catch (FileNotFoundException e) {
             state.setText("Error: generateId file not found");
@@ -129,6 +131,7 @@ public class ServerController implements Initializable {
         disconnect.setDisable(true);
         logHistory.setPlaceholder(new Label("No logs to display"));
 
+        //Binding tra observable list di Log e tableview
         date.setCellValueFactory(cellData -> cellData.getValue().dateProperty());
         message.setCellValueFactory(cellData -> cellData.getValue().mesProperty());
         client.setCellValueFactory(cellData -> cellData.getValue().clientProperty());

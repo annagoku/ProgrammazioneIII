@@ -47,7 +47,7 @@ public class DeleteThread extends Thread {
                     OutputStream out = s.getOutputStream();
                     InputStream in = s.getInputStream();
                     ObjectOutputStream clientObjOut = new ObjectOutputStream(out);
-                    ObjectInputStream clientObjIn = new ObjectInputStream(in);
+                    //ObjectInputStream clientObjIn = new ObjectInputStream(in);
                     Scanner clientIn = new Scanner(in);
                     PrintWriter clientPrint = new PrintWriter(out, true);
                     // comunico la cancellazione al server
@@ -75,12 +75,11 @@ public class DeleteThread extends Thread {
                                             model.getMailArrived().removeIf(eMail -> eMail.getId().equals(mailDelete.getId()));
 
                                         } catch (Exception e) {
-//                                            synchronized ((model.lock)) {
                                                 Alert alert = new Alert(Alert.AlertType.ERROR);
                                                 alert.setHeaderText("Cannot update file mail arrived");
                                                 alert.setContentText( e.getMessage());
                                                 alert.show();
-//                                            }
+
                                         }finally {
                                             model.sem.release();
                                         }
@@ -96,13 +95,12 @@ public class DeleteThread extends Thread {
                                             model.sem.release();
 
                                         } catch (Exception e) {
-                                            synchronized ((model.lock)) {
+
                                                 Alert alert = new Alert(Alert.AlertType.ERROR);
                                                 alert.setHeaderText("Cannot update file mail sent");
                                                 alert.setContentText( e.getMessage());
                                                 alert.show();
                                             }
-                                        }
                                     });
                                     break;
                                 default:
@@ -112,13 +110,11 @@ public class DeleteThread extends Thread {
                         else {
                             Platform.runLater(
                                     () -> {
-                                        synchronized (model.lock) {
                                             Alert alert = new Alert(Alert.AlertType.ERROR);
                                             alert.setHeaderText("Cannot delete mail");
                                             alert.setContentText( res);
                                             alert.show();
                                         }
-                                    }
                             );
                         }
                         }
@@ -128,33 +124,31 @@ public class DeleteThread extends Thread {
                     e.printStackTrace();
                     Platform.runLater(
                             () -> {
-                                synchronized (model.lock) {
                                     Alert alert = new Alert(Alert.AlertType.ERROR);
                                     alert.setHeaderText("Cannot delete mail");
                                     alert.setContentText( e.getMessage());
                                     alert.show();
                                 }
-                            }
+
                     );
             }
         } catch(IOException e){
                 e.printStackTrace();
                 Platform.runLater(
                         () -> {
-                            synchronized (model.lock) {
                                 Alert alert = new Alert(Alert.AlertType.ERROR);
                                 alert.setHeaderText("Cannot delete mail");
                                 alert.setContentText( e.getMessage());
                                 alert.show();
                             }
-                        }
                 );
         }
         finally {
             Platform.runLater(() -> {
-                synchronized (model.lock) {
-                    model.setClientOperation("");                }
-            });
+
+                    model.setClientOperation("");
+            }
+            );
         }
     }
 

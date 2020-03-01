@@ -30,8 +30,6 @@ public class MainGuiController implements Initializable {
     @FXML
     private TableView<EMail> tableArrived;
     @FXML
-    private TableColumn<EMail, String> stateMail;
-    @FXML
     private TableColumn<EMail, String> dateArrived;
     @FXML
     private TableColumn<EMail, String> sender;
@@ -64,8 +62,6 @@ public class MainGuiController implements Initializable {
 
 
     //Configure Label
-    @FXML
-    private Label connection; //TODO si potrebbe fare il binding con un'altra variabile del model che segna connected o errori di connessione
     @FXML
     private Label action;
 
@@ -100,8 +96,6 @@ public class MainGuiController implements Initializable {
         this.primaryStage = pm;
 
 
-
-
         //aggancio l'observable list alla tabella
         tableArrived.setItems(model.getMailArrived());
 
@@ -111,35 +105,21 @@ public class MainGuiController implements Initializable {
         action.textProperty().bind(this.model.clientOperationProperty());
 
         // Binding tableArrived
-        stateMail.setCellValueFactory(cellData -> cellData.getValue().isUnreadProperty());
         dateArrived.setCellValueFactory(cellData -> cellData.getValue().timeProperty());
         sender.setCellValueFactory(cellData -> cellData.getValue().senderProperty());
         objectArrived.setCellValueFactory(cellData -> cellData.getValue().subjectProperty());
-
-
 
         // Binding tableSent
         dateSent.setCellValueFactory(cellData -> cellData.getValue().timeProperty());
         recipients.setCellValueFactory(cellData -> cellData.getValue().recipientsProperty());
         objectSent.setCellValueFactory(cellData -> cellData.getValue().subjectProperty());
 
-
         // Listen for selection changes and show the mail details when changed.
         tableArrived.getSelectionModel().selectedItemProperty().addListener(
                 (observable, oldValue, newValue) -> showMailDetails(newValue));
 
-
-
-
-
         tableSent.getSelectionModel().selectedItemProperty().addListener(
                 (observable, oldValue, newValue) -> showMailDetails(newValue));
-
-
-
-
-
-
 
         // handles window close -> shutdown application
         primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {

@@ -76,6 +76,7 @@ public class Account implements Serializable {
                 '}';
     }
 
+    //Override del metodo equals
     @Override
     public boolean equals(Object obj) {
         if (obj!=null && obj instanceof Account){

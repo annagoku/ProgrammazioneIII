@@ -76,13 +76,13 @@ public class SendThread extends Thread {
                     else {
                         Platform.runLater(
                                 () -> {
-                                    synchronized (model.lock) {
+
                                         Alert alert = new Alert(Alert.AlertType.ERROR);
                                         alert.setHeaderText("Cannot send mail");
                                         alert.setContentText(res);
                                         alert.show();
                                     }
-                                }
+
                         );
 
 
@@ -94,35 +94,35 @@ public class SendThread extends Thread {
                 e.printStackTrace();
                 Platform.runLater(
                         () -> {
-                            synchronized (model.lock) {
+
                                 Alert alert = new Alert(Alert.AlertType.ERROR);
                                 alert.setHeaderText("Cannot send mail");
                                 alert.setContentText(e.getMessage());
                                 alert.show();
                             }
-                        }
+
                 );
             }
         } catch (IOException e) {
             e.printStackTrace();
             Platform.runLater(
                     () -> {
-                        synchronized (model.lock) {
+
                             Alert alert = new Alert(Alert.AlertType.ERROR);
                             alert.setHeaderText("Cannot send mail");
                             alert.setContentText(e.getMessage());
                             alert.show();
                         }
-                    }
+
             );
         }
         finally {
             Platform.runLater(
                     () -> {
-                        synchronized (model.lock) {
+
                             model.setClientOperation("");
                         }
-                    }
+
             );
         }
     }
