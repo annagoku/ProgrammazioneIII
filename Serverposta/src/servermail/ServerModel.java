@@ -14,6 +14,9 @@ import java.net.Socket;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import commons.Account;
@@ -36,18 +39,7 @@ public class ServerModel {
     //Lista di connessioni client attive
     List<ClientHandlerThread> prec = new ArrayList<>();
 
-    //Property Numero di Thread attivi
-    private StringProperty activeThread=new SimpleStringProperty("No Thread active");
-    public StringProperty activeThreadProperty() {
-        return this.activeThread;
-    }
-    public String getActiveThread() {
-        return this.activeThreadProperty().get();
-    }
-    public  void setActiveThread (String d) {
-        this.activeThreadProperty().set(d);
-    }
-
+    ExecutorService exec = Executors.newFixedThreadPool(100);
 
     //gestione binding loglist_tableView
     public ObservableList<Log> logHistory = FXCollections.observableArrayList();
@@ -69,12 +61,14 @@ public class ServerModel {
     public void startconnect(){
         Connessione connect=new Connessione(this);
         connect.start();
+
     }
 
     public void endconnect()  throws  IOException {
         if(s != null && !s.isClosed()) {
             s.close();
         }
+
     }
 
     //costruttore ServerModel
@@ -102,8 +96,8 @@ public class ServerModel {
                     LOGGER.info("new connection accepted... creating clientHandler");
                     ClientHandlerThread h = new ClientHandlerThread(listening, model);
                     prec.add(h);
-                    new ActiveThreadsUpdater(model).start();
-                    h.start();
+                    exec.execute(h);
+
 
 
                 }
@@ -151,6 +145,17 @@ public class ServerModel {
             arrivedFileHandler.put(acc.getEmail(), new FileHandler("./data/"+acc.getEmail()+"/"+acc.getEmail()+"_arrived.csv"));
             sentFileHandler.put(acc.getEmail(), new FileHandler("./data/"+acc.getEmail()+"/"+acc.getEmail()+"_sent.csv"));
             dr.close();
+        }
+        rr.close();
+    }
+
+
+    public void loadLogs() throws FileNotFoundException, Exception {
+        File f=new File("./data/Log.csv");
+        Scanner rr = new Scanner(f);
+        while( rr.hasNextLine()) {
+
+            logHistory.add(Log.parseLog(rr.nextLine()));
         }
         rr.close();
     }

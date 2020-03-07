@@ -30,7 +30,7 @@ public class SendThread extends Thread {
     public void run() {
         Socket s;
         try{
-            sleep (3000);
+            sleep (2000);
         }catch(InterruptedException e){
             e.printStackTrace();
         }
@@ -49,7 +49,7 @@ public class SendThread extends Thread {
                 clientObjOut.writeObject(model.getAccount());
 
                 String serverAnswer = clientIn.nextLine();
-                LOGGER.debug("Server says" +serverAnswer);
+                LOGGER.debug("Server says '" +serverAnswer+"'");
 
                 if (serverAnswer.equals("Ready")) {
 

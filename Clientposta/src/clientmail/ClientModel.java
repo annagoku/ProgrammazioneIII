@@ -49,14 +49,14 @@ public class ClientModel {
         this.casella = new Account(props.getProperty("account.name"),props.getProperty("account.surname"),props.getProperty("account.email"));
         this.host = props.getProperty("server.host");
         this.port = Integer.valueOf(props.getProperty("server.port"));
-        this.fileArrived = new FileHandler("./data/"+casella.getEmail()+"_arrived.csv");
-        this.fileSent = new FileHandler("./data/"+casella.getEmail()+"_sent.csv");
+        this.fileArrived = new FileHandler("./data/"+casella.getEmail()+"/"+casella.getEmail()+"_arrived.csv");
+        this.fileSent = new FileHandler("./data/"+casella.getEmail()+"/"+casella.getEmail()+"_sent.csv");
 
         this.loadMailArrived();
         this.loadMailSent();
 
         //Thread Daemon per la ricezione periodica automatica di mail
-        new ReceiveThread(this, true).start();
+        new ReceiveThread(this, true, true).start();
     }
 
     public FileHandler getFileSent() {

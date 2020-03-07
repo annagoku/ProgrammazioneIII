@@ -14,9 +14,30 @@ import javafx.stage.WindowEvent;
 import java.io.*;
 import java.net.URL;
 import java.util.ResourceBundle;
+import java.util.concurrent.TimeUnit;
 
 public class ServerController implements Initializable {
     private static SystemLogger LOGGER = new SystemLogger(ServerController.class);
+
+    @FXML
+    private TableView<Log> logHistory;
+    @FXML
+    private TableColumn<Log, String> date;
+    @FXML
+    private TableColumn<Log, String> message;
+    @FXML
+    private TableColumn<Log, String> client;
+    @FXML
+    private TableColumn<Log, String> ipClient;
+    @FXML
+    private Label state;
+
+
+
+    @FXML
+    private Button connect;
+    @FXML
+    private Button disconnect;
 
     private ServerModel model;
 
@@ -27,12 +48,11 @@ public class ServerController implements Initializable {
         this.model=m;
         //aggancio l'observable list alla tabella
         logHistory.setItems(model.getLog());
-        //binding con activeThread
-        activeThread.textProperty().bind(model.activeThreadProperty());
 
         try {
             //carica gli account
             model.loadAccounts();
+            model.loadLogs();
         } catch (FileNotFoundException e) {
             state.setText("Error: accounts file not found");
             state.setTextFill(Color.RED);
@@ -64,26 +84,6 @@ public class ServerController implements Initializable {
 
 
 
-    @FXML
-    private TableView<Log> logHistory;
-    @FXML
-    private TableColumn<Log, String> date;
-    @FXML
-    private TableColumn<Log, String> message;
-    @FXML
-    private TableColumn<Log, String> client;
-    @FXML
-    private TableColumn<Log, String> ipClient;
-    @FXML
-    private Label state;
-    @FXML
-    private Label activeThread;
-
-
-    @FXML
-    private Button connect;
-    @FXML
-    private Button disconnect;
 
 
 
@@ -100,7 +100,10 @@ public class ServerController implements Initializable {
 
     public void handleclose(ActionEvent e) {
         LOGGER.debug("pressed Close button");
-        if(model.prec.size()>0) {
+        model.exec.shutdown();
+
+
+        /*if(model.prec.size()>0) {
             for (Thread t : model.prec) {
                 try {
                     t.join();
@@ -108,17 +111,23 @@ public class ServerController implements Initializable {
                     j.printStackTrace();
                 }
             }
-        }
+        }*/
         try {
             model.endconnect();
             state.setText("Disconnect");
             state.setTextFill(Color.RED);
             disconnect.setDisable(true);
             connect.setDisable(false);
+            model.exec.awaitTermination(30, TimeUnit.SECONDS);
         } catch (IOException ex) {
             LOGGER.error(ex.getMessage());
             ex.printStackTrace();
             state.setText("Disconnect error: "+ex.getMessage());
+            state.setTextFill(Color.RED);
+        } catch (InterruptedException ex) {
+            ex.printStackTrace();
+            LOGGER.error(ex.getMessage());
+            state.setText("Timeout in stopping clients: "+ex.getMessage());
             state.setTextFill(Color.RED);
         }
     }

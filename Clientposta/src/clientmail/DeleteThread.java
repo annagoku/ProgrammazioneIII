@@ -34,120 +34,120 @@ public class DeleteThread extends Thread {
         Boolean found=false;
         File f = null;
         try{
-            sleep (3000);
+            sleep (2000);
         }catch(InterruptedException e){
             e.printStackTrace();
         }
 
+        try {
+            LOGGER.info("connecting to server...");
+
+            s = new Socket(model.host, model.port);
             try {
-                LOGGER.info("connecting to server...");
+                OutputStream out = s.getOutputStream();
+                ObjectOutputStream clientObjOut = new ObjectOutputStream(out);
+                InputStream in = s.getInputStream();
+                ObjectInputStream clientObjIn = new ObjectInputStream(in);
+                Scanner clientIn = new Scanner(in);
+                PrintWriter clientPrint = new PrintWriter(out, true);
+                // comunico la cancellazione al server
+                clientObjOut.writeObject(model.getAccount());
+                clientObjOut.flush();
+                String serverAnswer = clientIn.nextLine();
+                LOGGER.debug("Server says '" +serverAnswer+"'");
 
-                s = new Socket(model.host, model.port);
-                try {
-                    OutputStream out = s.getOutputStream();
-                    InputStream in = s.getInputStream();
-                    ObjectOutputStream clientObjOut = new ObjectOutputStream(out);
-                    //ObjectInputStream clientObjIn = new ObjectInputStream(in);
-                    Scanner clientIn = new Scanner(in);
-                    PrintWriter clientPrint = new PrintWriter(out, true);
-                    // comunico la cancellazione al server
-                    clientObjOut.writeObject(model.getAccount());
+                if (serverAnswer.equals("Ready")) {
+                    LOGGER.debug("connected. Sending delete command.."+" mailId "+mailDelete.getId());
+                    clientPrint.println("Delete "+selection.toString() );
+                    clientPrint.println(mailDelete.getId());
+                    String res = clientIn.nextLine();
+                    clientPrint.println("QUIT");
 
-                    String serverAnswer = clientIn.nextLine();
-                    LOGGER.debug("Server says" +serverAnswer);
+                    if(res != null && res.equals("Done")) {
 
-                    if (serverAnswer.equals("Ready")) {
-                        LOGGER.debug("connected. Sending delete command.."+" mailId "+mailDelete.getId());
-                        clientPrint.println("Delete "+selection.toString() );
-                        clientPrint.println(mailDelete.getId());
-                        String res = clientIn.nextLine();
-                        clientPrint.println("QUIT");
+                        switch (selection) {
+                            case ARRIVED:
+                                model.getFileArrived().remove(mailDelete.getId());
 
-                        if(res != null && res.equals("Done")) {
+                                Platform.runLater(() -> {
+                                    try {
+                                        model.sem.acquire();
+                                        model.getMailArrived().removeIf(eMail -> eMail.getId().equals(mailDelete.getId()));
 
-                            switch (selection) {
-                                case ARRIVED:
-                                    model.getFileArrived().remove(mailDelete.getId());
+                                    } catch (Exception e) {
+                                        Alert alert = new Alert(Alert.AlertType.ERROR);
+                                        alert.setHeaderText("Cannot update file mail arrived");
+                                        alert.setContentText( e.getMessage());
+                                        alert.show();
 
-                                    Platform.runLater(() -> {
-                                        try {
-                                            model.sem.acquire();
-                                            model.getMailArrived().removeIf(eMail -> eMail.getId().equals(mailDelete.getId()));
+                                    }finally {
+                                        model.sem.release();
+                                    }
+                                });
+                                break;
+                            case SENT:
+                                model.getFileSent().remove(mailDelete.getId());
 
-                                        } catch (Exception e) {
-                                                Alert alert = new Alert(Alert.AlertType.ERROR);
-                                                alert.setHeaderText("Cannot update file mail arrived");
-                                                alert.setContentText( e.getMessage());
-                                                alert.show();
+                                Platform.runLater(() -> {
+                                    try {
+                                        model.sem.acquire();
+                                        model.getMailSent().removeIf(eMail -> eMail.getId().equals(mailDelete.getId()));
+                                        model.sem.release();
 
-                                        }finally {
-                                            model.sem.release();
-                                        }
-                                    });
-                                    break;
-                                case SENT:
-                                    model.getFileSent().remove(mailDelete.getId());
+                                    } catch (Exception e) {
 
-                                    Platform.runLater(() -> {
-                                        try {
-                                            model.sem.acquire();
-                                            model.getMailSent().removeIf(eMail -> eMail.getId().equals(mailDelete.getId()));
-                                            model.sem.release();
-
-                                        } catch (Exception e) {
-
-                                                Alert alert = new Alert(Alert.AlertType.ERROR);
-                                                alert.setHeaderText("Cannot update file mail sent");
-                                                alert.setContentText( e.getMessage());
-                                                alert.show();
-                                            }
-                                    });
-                                    break;
-                                default:
-                                    throw new RuntimeException("shouldn't be here");
-                            }
+                                        Alert alert = new Alert(Alert.AlertType.ERROR);
+                                        alert.setHeaderText("Cannot update file mail sent");
+                                        alert.setContentText( e.getMessage());
+                                        alert.show();
+                                    }
+                                });
+                                break;
+                            default:
+                                throw new RuntimeException("shouldn't be here");
                         }
-                        else {
-                            Platform.runLater(
-                                    () -> {
-                                            Alert alert = new Alert(Alert.AlertType.ERROR);
-                                            alert.setHeaderText("Cannot delete mail");
-                                            alert.setContentText( res);
-                                            alert.show();
-                                        }
-                            );
-                        }
-                        }
-
-                    s.close();
-            } catch (Exception  e) {
-                    e.printStackTrace();
-                    Platform.runLater(
-                            () -> {
+                    }
+                    else {
+                        Platform.runLater(
+                                () -> {
                                     Alert alert = new Alert(Alert.AlertType.ERROR);
                                     alert.setHeaderText("Cannot delete mail");
-                                    alert.setContentText( e.getMessage());
+                                    alert.setContentText( res);
                                     alert.show();
                                 }
+                        );
+                    }
+                }
 
-                    );
-            }
-        } catch(IOException e){
+                s.close();
+            } catch (Exception  e) {
                 e.printStackTrace();
                 Platform.runLater(
                         () -> {
-                                Alert alert = new Alert(Alert.AlertType.ERROR);
-                                alert.setHeaderText("Cannot delete mail");
-                                alert.setContentText( e.getMessage());
-                                alert.show();
-                            }
+                            Alert alert = new Alert(Alert.AlertType.ERROR);
+                            alert.setHeaderText("Cannot delete mail");
+                            alert.setContentText( e.getMessage());
+                            alert.show();
+                        }
+
                 );
+            }
+        } catch(IOException e){
+            e.printStackTrace();
+            Platform.runLater(
+                    () -> {
+                        Alert alert = new Alert(Alert.AlertType.ERROR);
+                        alert.setHeaderText("Cannot delete mail");
+                        alert.setContentText( e.getMessage());
+                        alert.show();
+                    }
+            );
         }
         finally {
             Platform.runLater(() -> {
 
-                    model.setClientOperation("");
-            }
+                        model.setClientOperation("");
+                    }
             );
         }
     }

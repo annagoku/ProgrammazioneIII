@@ -2,23 +2,17 @@
 
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<?import javafx.scene.text.*?>
 
-<AnchorPane prefHeight="500.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/10.0.2-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="clientmail.ModalEmailController">
+<AnchorPane prefHeight="443.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/10.0.2-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="clientmail.ModalEmailController">
    <children>
-      <Button fx:id="send" layoutX="477.0" layoutY="431.0" mnemonicParsing="false" onAction="#handleSend" text="Send" />
-      <Button fx:id="annulla" layoutX="531.0" layoutY="431.0" mnemonicParsing="false" onAction="#cancel" text="Cancel" />
-      <TextField fx:id="valueRecipients" layoutX="86.0" layoutY="99.0" prefHeight="26.0" prefWidth="502.0" />
-      <TextField fx:id="valueSender" layoutX="86.0" layoutY="62.0" prefHeight="26.0" prefWidth="502.0" />
-      <TextField fx:id="valueObject" layoutX="86.0" layoutY="134.0" prefHeight="26.0" prefWidth="502.0" />
-      <TextArea fx:id="valueText" layoutX="15.0" layoutY="174.0" prefHeight="237.0" prefWidth="574.0" />
-      <Label fx:id="labelDestinatari" layoutX="15.0" layoutY="103.0" text="Recipients:" />
-      <Label fx:id="labelOggetto" layoutX="15.0" layoutY="138.0" text="Subject:" />
-      <Label fx:id="labelMittente" layoutX="15.0" layoutY="66.0" text="Sender:" />
-      <Label fx:id="date" layoutX="429.0" layoutY="28.0" text="date">
-         <font>
-            <Font name="Calibri Italic" size="14.0" />
-         </font>
-      </Label>
+      <Button fx:id="send" layoutX="480.0" layoutY="398.0" mnemonicParsing="false" onAction="#handleSend" text="Send" />
+      <Button fx:id="annulla" layoutX="534.0" layoutY="398.0" mnemonicParsing="false" onAction="#cancel" text="Cancel" />
+      <TextField fx:id="valueRecipients" layoutX="86.0" layoutY="61.0" prefHeight="26.0" prefWidth="502.0" />
+      <TextField fx:id="valueSender" layoutX="86.0" layoutY="20.0" prefHeight="26.0" prefWidth="502.0" />
+      <TextField fx:id="valueObject" layoutX="86.0" layoutY="102.0" prefHeight="26.0" prefWidth="502.0" />
+      <TextArea fx:id="valueText" layoutX="13.0" layoutY="146.0" prefHeight="237.0" prefWidth="574.0" />
+      <Label fx:id="labelDestinatari" layoutX="15.0" layoutY="65.0" text="Recipients:" />
+      <Label fx:id="labelOggetto" layoutX="15.0" layoutY="106.0" text="Subject:" />
+      <Label fx:id="labelMittente" layoutX="16.0" layoutY="24.0" text="Sender:" />
    </children>
 </AnchorPane>

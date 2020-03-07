@@ -29,8 +29,7 @@ public class ModalEmailController implements Initializable {
     private  TextField valueObject;
     @FXML
     private TextArea valueText;
-    @FXML
-    private Label date;
+
     @FXML
     private Button send;
 
@@ -45,7 +44,6 @@ public class ModalEmailController implements Initializable {
                 valueSender.setText(model.getCasella());
                 valueSender.setDisable(true);
                 valueSender.setStyle("-fx-opacity: 1;");
-                date.setText(Utilities.dateString());
                 break;
             case "REPLY":
                 if(mail!=null){
@@ -54,7 +52,6 @@ public class ModalEmailController implements Initializable {
                     valueSender.setDisable(true);
                     valueSender.setStyle("-fx-opacity: 1;");
                     valueObject.setText(("R: ".concat(mailsel.getSubject())));
-                    date.setText(Utilities.dateString());
                     valueRecipients.setText(mailsel.getSender());
                     valueText.setText(Utilities.getReplyText(mailsel));
                 }
@@ -66,7 +63,6 @@ public class ModalEmailController implements Initializable {
                     valueSender.setDisable(true);
                     valueSender.setStyle("-fx-opacity: 1;");
                     valueObject.setText(("R: ".concat(mailsel.getSubject())));
-                    date.setText(Utilities.dateString());
                     if(mailsel.getRecipients().trim().equals(model.getCasella())) {
                         valueRecipients.setText(mailsel.getSender());
                     }
@@ -84,7 +80,6 @@ public class ModalEmailController implements Initializable {
                     valueSender.setDisable(true);
                     valueSender.setStyle("-fx-opacity: 1;");
                     valueObject.setText(("F: ".concat(mailsel.getSubject())));
-                    date.setText(Utilities.dateString());
                     valueRecipients.setText("");
                     valueText.setText(Utilities.getReplyText(mailsel));
                 }
@@ -98,9 +93,6 @@ public class ModalEmailController implements Initializable {
                     valueObject.setText(mailsel.getSubject());
                     valueObject.setDisable(true);
                     valueObject.setStyle("-fx-opacity: 1;");
-                    date.setText(mailsel.getTime());
-                    date.setDisable(true);
-                    date.setStyle("-fx-opacity: 1;");
                     valueRecipients.setText(mail.getRecipients());
                     valueRecipients.setDisable(true);
                     valueRecipients.setStyle("-fx-opacity: 1;");

@@ -37,7 +37,6 @@ public abstract class Utilities {
         return DATE_FORMAT_MILLIS.format(Calendar.getInstance().getTime());
     }
 
-
      /* @param date
         @return String representing date (forma with millis)*/
     public static String dateStringMillis(Date date) {

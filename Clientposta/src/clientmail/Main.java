@@ -24,15 +24,23 @@ public class Main extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception{
+
+
+
         BorderPane root= new BorderPane();
         LOGGER.info("Loading UI");
         FXMLLoader listLoader = new FXMLLoader(getClass().getResource("ClientGraphicalInterface.fxml"));
         root.setCenter(listLoader.load());
         MainGuiController mainGuiController = listLoader.getController();
 
+        //Reading mail folder
+        Parameters args = getParameters();
+        String folder = args.getRaw().get(0);
+        LOGGER.info("Account folder: "+folder);
+
         LOGGER.info("Loading properties");
         Properties props = new Properties();
-        props.load(new FileInputStream(("./data/config.properties")));
+        props.load(new FileInputStream(("./data/"+folder+"/config.properties")));
 
 
 

@@ -112,7 +112,7 @@ public class ClientHandlerThread extends Thread{
                                     model.logHistory.add(
                                             new Log ("Sent response (Done) to client", client.getEmail(),ServerModel.dateToString(), ip  ));
                                     LOGGER.debug("sending mail list to client: "+arrived);
-                                    //serverAnswer.println(Collections.);
+
                                     serverObjOut.writeObject(arrived);
                                     model.logHistory.add(
                                             new Log ("Sent email list (size "+arrived.size()+") to client", client.getEmail(),ServerModel.dateToString(), ip  ));
@@ -239,7 +239,7 @@ public class ClientHandlerThread extends Thread{
 
 
             }
-            new ActiveThreadsUpdater(model).start();
+
         }
         catch (Exception e){
             e.printStackTrace();

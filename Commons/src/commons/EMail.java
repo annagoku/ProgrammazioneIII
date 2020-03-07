@@ -134,7 +134,7 @@ public class EMail {
     }
 
     public static boolean recipientsValid(String rec) {
-        if(rec!= null) {
+        if(rec!= null && !"".equals(rec)) {
             Scanner s = new Scanner(rec).useDelimiter("\\s*,\\s*");
             boolean valid = true;
             while(s.hasNext() && valid) {

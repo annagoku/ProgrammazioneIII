@@ -68,6 +68,22 @@ public class Log implements Serializable{
     public String toString() {
         return getDate()+ ";"+getMes()+";"+getClient()+";"+getIpClient()+";";
     }
+
+    public static Log parseLog(String s) {
+        try {
+            String[] tokens = s.split(";");
+            String date = tokens[0].trim();
+            String mes = tokens[1].trim();
+            String client = tokens[2].trim();
+            String ipClient = tokens[3].trim();
+            Log log = new Log(mes, client, date, ipClient);
+
+            return log;
+        }
+        catch (Exception e) {
+            throw new IllegalArgumentException(e.getMessage(), e);
+        }
+    }
 }
 
 

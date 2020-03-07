@@ -1,11 +1,13 @@
 package clientmail;
 
 import javafx.application.Platform;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
@@ -138,7 +140,7 @@ public class MainGuiController implements Initializable {
     public void handleReceive(){
         model.setClientOperation("Loading mail from server....");
 
-        new ReceiveThread(model, false).start();
+        new ReceiveThread(model, false, false).start();
 
     }
 
@@ -176,7 +178,6 @@ public class MainGuiController implements Initializable {
         }
     }
 
-
     //Apertura nuova finestra per reply/replyall/forward
     @FXML
     public void handleAction(ActionEvent event) throws IOException {
@@ -196,24 +197,42 @@ public class MainGuiController implements Initializable {
         modal_dialog.show();
     }
 
-    //Apertura mail con 2-click mouse
     @FXML
-    public void handleActionMouse (MouseEvent event)throws IOException{
-        if(event.getClickCount()==2){
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("ModalEmail.fxml"));
-            loader.load();
-            Parent root = loader.getRoot();
-            Stage modal_dialog = new Stage(StageStyle.DECORATED);
-            modal_dialog.initModality(Modality.WINDOW_MODAL);
-            modal_dialog.initOwner(primaryStage);
-            Scene scene = new Scene(root);
-            modal_dialog.setTitle("Client posta "+ model.getCasella());
-            ModalEmailController mc = (ModalEmailController) loader.getController();
-            commandEvent="MOUSEEVENT";
-            mc.initModel(this.model,selectedEmail, commandEvent, modal_dialog, action);
-            modal_dialog.setScene(scene);
-            modal_dialog.show();
+    public void handleActionMouseArrived (MouseEvent event)throws IOException {
+        EMail email =  tableArrived.getSelectionModel().selectedItemProperty().get();
+        showMailDetails(email);
+        //gestione doppio-click
+        if(event.getClickCount() == 2) {
+            openMailDialog();
         }
+    }
+
+
+    @FXML
+    public void handleActionMouseSent (MouseEvent event)throws IOException {
+        EMail email =  tableSent.getSelectionModel().selectedItemProperty().get();
+        showMailDetails(email);
+        //gestione doppio-click
+        if(event.getClickCount() == 2) {
+            openMailDialog();
+        }
+    }
+
+    private void openMailDialog() throws IOException {
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("ModalEmail.fxml"));
+        loader.load();
+        Parent root = loader.getRoot();
+        Stage modal_dialog = new Stage(StageStyle.DECORATED);
+        modal_dialog.initModality(Modality.WINDOW_MODAL);
+        modal_dialog.initOwner(primaryStage);
+        Scene scene = new Scene(root);
+        modal_dialog.setTitle("Client posta "+ model.getCasella());
+        ModalEmailController mc = (ModalEmailController) loader.getController();
+        commandEvent="MOUSEEVENT";
+        mc.initModel(this.model,selectedEmail, commandEvent, modal_dialog, action);
+        modal_dialog.setScene(scene);
+        modal_dialog.show();
+
     }
 
 
