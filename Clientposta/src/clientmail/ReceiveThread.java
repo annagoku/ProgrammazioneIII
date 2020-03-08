@@ -38,6 +38,9 @@ public class ReceiveThread extends Thread {
                     Thread.sleep(60000);
                 } catch (InterruptedException e) {
                 }
+                Platform.runLater(() -> {
+                    model.setClientOperation("Loading mail from server....");
+                });
                 new ReceiveThread(model, false, true).start();
             }
         }
@@ -80,7 +83,19 @@ public class ReceiveThread extends Thread {
                     serverAnswer = clientIn.nextLine();
                     LOGGER.info(prefixLog+"server answer -> "+serverAnswer);
                     if(serverAnswer.equals("Done")) {
-                        List<String> stringList = (List<String>)clientObjIn.readObject();
+                        List<String> stringList = null;
+
+                        try {
+                            stringList =(List<String>)clientObjIn.readObject();
+                            clientPrint.println("Quit OK");
+                        }
+                        catch (Exception e) {
+                            clientPrint.println("Quit KO");
+                            throw e;
+                        }
+
+
+
                         List<EMail> list = Utilities.readNewEmailsFromStringList(stringList);
 
 
@@ -118,9 +133,6 @@ public class ReceiveThread extends Thread {
                 else {
                     LOGGER.error(prefixLog+"error on receiving. Server says "+serverAnswer);
                 }
-                clientPrint.println("Quit");
-
-                s.close();
 
 
             } catch (Exception e) {
@@ -133,6 +145,11 @@ public class ReceiveThread extends Thread {
 
                 });
             }
+            finally {
+                if(s != null)
+                    s.close();
+            }
+
         } catch (IOException e) {
             e.printStackTrace();
             Platform.runLater(() -> {

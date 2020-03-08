@@ -50,7 +50,7 @@ public class ClientHandlerThread extends Thread{
             Thread.sleep(1500);
             LOGGER.info("running for client "+ip);
             Log connectLog= new Log ("Connection from client", email,ServerModel.dateToString(), ip  );
-            model.logHistory.add(connectLog);
+            model.addLog(connectLog);
 
             in = listening.getInputStream();
             out = listening.getOutputStream();
@@ -72,11 +72,11 @@ public class ClientHandlerThread extends Thread{
             if (localAccount == null){
                 serverAnswer.println("Account not registered");
                 Log log_1= new Log ("Rejecting connection from account not registered", client.getEmail(),ServerModel.dateToString(), ip  );
-                model.logHistory.add(log_1);
+                model.addLog(log_1);
                 model.prec.remove(this);
 
             }else{
-                model.logHistory.add(
+                model.addLog(
                         new Log ("Account connected successfully", client.getEmail(),ServerModel.dateToString(), ip  ));
 
 
@@ -94,7 +94,7 @@ public class ClientHandlerThread extends Thread{
                     if(m.matches()) {
                         command = m.group(1).toLowerCase();
                         String param=m.group(2);
-                        model.logHistory.add(
+                        model.addLog(
                                 new Log ("Received command ("+s+")", client.getEmail(),ServerModel.dateToString(), ip  ));
 
                         switch (command){
@@ -109,12 +109,12 @@ public class ClientHandlerThread extends Thread{
                                         arrived = model.arrivedFileHandler.get(localAccount.getEmail()).readListString(timestamp);
 
                                     serverAnswer.println("Done");
-                                    model.logHistory.add(
+                                    model.addLog(
                                             new Log ("Sent response (Done) to client", client.getEmail(),ServerModel.dateToString(), ip  ));
                                     LOGGER.debug("sending mail list to client: "+arrived);
 
                                     serverObjOut.writeObject(arrived);
-                                    model.logHistory.add(
+                                    model.addLog(
                                             new Log ("Sent email list (size "+arrived.size()+") to client", client.getEmail(),ServerModel.dateToString(), ip  ));
 
                                 }
@@ -142,7 +142,7 @@ public class ClientHandlerThread extends Thread{
                                     mailToSend.setId(mailID);
                                     LOGGER.debug("sent answer: Done "+mailID);
                                     serverAnswer.println("Done "+mailID);
-                                    model.logHistory.add(
+                                    model.addLog(
                                             new Log ("Sent response (Done "+mailID+") to client", client.getEmail(),ServerModel.dateToString(), ip  ));
 
                                     while (l.hasNext()){
@@ -203,7 +203,7 @@ public class ClientHandlerThread extends Thread{
                                     }
                                     LOGGER.debug("sending Done to client");
                                     serverAnswer.println("Done");
-                                    model.logHistory.add(
+                                    model.addLog(
                                             new Log ("Sent response (Done) to client", client.getEmail(),ServerModel.dateToString(), ip  ));
                                     LOGGER.debug("end delete");
                                 }
@@ -223,7 +223,7 @@ public class ClientHandlerThread extends Thread{
                                 LOGGER.debug("sending invalid command to client");
 
                                 serverAnswer.println("Error: invalid command "+command);
-                                model.logHistory.add(
+                                model.addLog(
                                         new Log ("invalid command ("+s+")", client.getEmail(),ServerModel.dateToString(), ip  ));
                                 stop = true;
                                 break;
@@ -231,7 +231,7 @@ public class ClientHandlerThread extends Thread{
                     }
                     else {
                         serverAnswer.println("Command not found");
-                        model.logHistory.add(
+                        model.addLog(
                                 new Log ("Command not found ("+s+")", client.getEmail(),ServerModel.dateToString(), ip  ));
 
                     }
@@ -245,7 +245,7 @@ public class ClientHandlerThread extends Thread{
             e.printStackTrace();
             String details = e.getClass().getName()+" "+e.getMessage();
             LOGGER.error("I/O error: "+details);
-            model.logHistory.add(
+            model.addLog(
                     new Log ("Connection Error ("+details+")", email,ServerModel.dateToString(), ip  ));
         }
         finally {
@@ -253,12 +253,12 @@ public class ClientHandlerThread extends Thread{
             model.prec.remove(this);
             try {
                 listening.close();
-                model.logHistory.add(
+                model.addLog(
                         new Log ("Connection closed", email,ServerModel.dateToString(), ip  ));
                 LOGGER.info("Closing connection... OK");
             } catch (IOException e) {
                 LOGGER.error("Error on closing connection" +e.getMessage());
-                model.logHistory.add(
+                model.addLog(
                         new Log ("Error on closing connection ("+e.getMessage()+")", email,ServerModel.dateToString(), ip  ));
                 e.printStackTrace();
             }

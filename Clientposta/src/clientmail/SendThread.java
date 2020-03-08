@@ -57,8 +57,18 @@ public class SendThread extends Thread {
                     clientPrint.println("Send");
                     clientPrint.println(mailSend.toString());
 
-                    String res = clientIn.nextLine();
-                    clientPrint.println("QUIT");
+                    String res = null;
+
+                    try {
+                        res = clientIn.nextLine();
+                        clientPrint.println("QUIT OK");
+
+                    }catch (Exception e) {
+                        clientPrint.println("QUIT KO");
+                        throw e;
+                    }
+
+                    final String messageFromServer = res;
 
                     Matcher m = patternDone.matcher(res);
                     LOGGER.debug("Server answer ->" +res);
@@ -79,7 +89,7 @@ public class SendThread extends Thread {
 
                                         Alert alert = new Alert(Alert.AlertType.ERROR);
                                         alert.setHeaderText("Cannot send mail");
-                                        alert.setContentText(res);
+                                        alert.setContentText(messageFromServer);
                                         alert.show();
                                     }
 

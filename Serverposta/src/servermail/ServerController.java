@@ -2,6 +2,7 @@ package servermail;
 
 import commons.SystemLogger;
 import javafx.application.Platform;
+import javafx.collections.ListChangeListener;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -48,6 +49,7 @@ public class ServerController implements Initializable {
         this.model=m;
         //aggancio l'observable list alla tabella
         logHistory.setItems(model.getLog());
+
 
         try {
             //carica gli account

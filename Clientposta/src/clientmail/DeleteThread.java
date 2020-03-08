@@ -60,10 +60,18 @@ public class DeleteThread extends Thread {
                     LOGGER.debug("connected. Sending delete command.."+" mailId "+mailDelete.getId());
                     clientPrint.println("Delete "+selection.toString() );
                     clientPrint.println(mailDelete.getId());
-                    String res = clientIn.nextLine();
-                    clientPrint.println("QUIT");
+                    String res = null;
+                    try {
+                        res = clientIn.nextLine();
+                        clientPrint.println("QUIT OK");
 
-                    if(res != null && res.equals("Done")) {
+                    }
+                    catch (Exception e) {
+                        clientPrint.println("QUIT KO");
+                        throw e;
+                    }
+                    final String messageFromServer = res;
+                    if(messageFromServer != null && messageFromServer.equals("Done")) {
 
                         switch (selection) {
                             case ARRIVED:
@@ -112,7 +120,7 @@ public class DeleteThread extends Thread {
                                 () -> {
                                     Alert alert = new Alert(Alert.AlertType.ERROR);
                                     alert.setHeaderText("Cannot delete mail");
-                                    alert.setContentText( res);
+                                    alert.setContentText( messageFromServer);
                                     alert.show();
                                 }
                         );

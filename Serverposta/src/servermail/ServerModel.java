@@ -25,6 +25,7 @@ public class ServerModel {
 
     public final static String MAIL_SERVER = "mail.server@mymail.com";
     private static SystemLogger LOGGER = new SystemLogger(ServerModel.class);
+    private int lastPos = 0;
 
    // variabili gestione connessione
     public ServerSocket s = null;
@@ -118,6 +119,27 @@ public class ServerModel {
 
             }
         }
+    }
+
+    public synchronized void addLog(Log l) {
+        this.logHistory.add(l);
+    }
+
+    public synchronized void saveLogs() throws IOException {
+
+            PrintWriter saveLog = new PrintWriter(new FileWriter("./data/Log.csv", true), true);
+
+
+
+            LOGGER.info("saving logs");
+
+            int i = 0;
+            for (i=lastPos; i<logHistory.size(); i++) {
+                saveLog.println(logHistory.get(i).toString());
+            }
+            lastPos=i;
+
+
     }
 
     //metodo statico per convertire il timestamp in String

@@ -28,7 +28,6 @@ public class Main extends Application {
         ServerModel model= new ServerModel();
         serverController.init(model);
 
-        //Runtime.getRuntime().addShutdownHook();
 
         primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
             @Override
@@ -37,6 +36,7 @@ public class Main extends Application {
                 try {
                     model.endconnect();
                     model.saveId();
+                    model.saveLogs();
                 } catch (Exception e) {
                     LOGGER.error(e.getMessage());
                     e.printStackTrace();
