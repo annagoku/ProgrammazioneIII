@@ -9,8 +9,10 @@ public class Account implements Serializable {
     private String surname;
     private String email;
 
+    //Costruttore
     public Account(String name, String surname, String email) {
         //per impedire che un oggetto di classe Account abbia la email vuota
+        // Eccezione gestita solo in std out dato che non è previsto un login
         if(email == null || "".equals(email)) {
             throw new RuntimeException("email cannot be empty or null");
         }

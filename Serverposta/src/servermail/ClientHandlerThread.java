@@ -1,20 +1,16 @@
 package servermail;
 
+import commons.*;
+
 import java.io.*;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import commons.*;
 
-/*
- Client Handler
- */
-public class ClientHandlerThread extends Thread{
+public class ClientHandlerThread implements Runnable{
 
     // i comandi da dare al server sono fatti da una parola + uno o piu' spazi + un eventuale parametro
     // questo pattern controlla questo formato e raggruppa in modo che il primo gruppo sia il comando
@@ -39,8 +35,6 @@ public class ClientHandlerThread extends Thread{
         this.listening = socket;
         this.model = model;
         this.ip = listening.getInetAddress().getHostAddress();
-
-
     }
 
     @Override
@@ -48,7 +42,7 @@ public class ClientHandlerThread extends Thread{
         String email = "";
         try {
             Thread.sleep(1500);
-            LOGGER.info("running for client "+ip);
+            LOGGER.log("running for client "+ip);
             Log connectLog= new Log ("Connection from client", email,ServerModel.dateToString(), ip  );
             model.addLog(connectLog);
 
@@ -60,34 +54,27 @@ public class ClientHandlerThread extends Thread{
             serverObjOut = new ObjectOutputStream(out);
             serverObjIn = new ObjectInputStream(in);
 
-            LOGGER.info("waiting for account..");
+            LOGGER.log("waiting for account..");
             client= (Account)serverObjIn.readObject();
             email = client.getEmail();
-            LOGGER.info("account: "+client);
+            LOGGER.log("account: "+client);
 
+            //Utilizzo l'hashmap per verificare l'esistenza dell'account
             Account localAccount = model.accounts.get(email);
-
-
 
             if (localAccount == null){
                 serverAnswer.println("Account not registered");
                 Log log_1= new Log ("Rejecting connection from account not registered", client.getEmail(),ServerModel.dateToString(), ip  );
                 model.addLog(log_1);
-                model.prec.remove(this);
 
             }else{
                 model.addLog(
                         new Log ("Account connected successfully", client.getEmail(),ServerModel.dateToString(), ip  ));
-
-
                 serverAnswer.println("Ready");
-
-
                 boolean stop = false;
-
                 while (!stop) {
                     String s =inputLine.nextLine();
-                    LOGGER.debug("string received: '"+s+"'");
+                    LOGGER.log("string received: '"+s+"'");
 
                     Matcher m = pattern.matcher(s);
 
@@ -99,7 +86,7 @@ public class ClientHandlerThread extends Thread{
 
                         switch (command){
                             case "receive":
-                                LOGGER.debug("---------------receive case: ");
+                                LOGGER.log("---------------receive case: ");
                                 String timestamp=param;
                                 List<String> arrived=null;
                                 try {
@@ -111,8 +98,8 @@ public class ClientHandlerThread extends Thread{
                                     serverAnswer.println("Done");
                                     model.addLog(
                                             new Log ("Sent response (Done) to client", client.getEmail(),ServerModel.dateToString(), ip  ));
-                                    LOGGER.debug("sending mail list to client: "+arrived);
-
+                                    LOGGER.log("sending mail list to client: "+arrived);
+                                    //Restituisce al client una lista di mail vuota o in forma di stringa
                                     serverObjOut.writeObject(arrived);
                                     model.addLog(
                                             new Log ("Sent email list (size "+arrived.size()+") to client", client.getEmail(),ServerModel.dateToString(), ip  ));
@@ -123,51 +110,49 @@ public class ClientHandlerThread extends Thread{
                                 }
                                 break;
                             case "send":
-                                LOGGER.debug("---------------send case: ");
+                                LOGGER.log("---------------send case: ");
                                 EMail mailToSend;
                                 String receiver;
                                 String tpm;
-                                PrintWriter saveMailArrived;
-                                PrintWriter saveMailSent;
                                 try{
-                                    LOGGER.debug("reading mail to send from client... ");
+                                    LOGGER.log("reading mail to send from client... ");
                                     String mailString = inputLine.nextLine();
-                                    LOGGER.debug("parsing -> "+mailString);
+                                    LOGGER.log("parsing -> "+mailString);
 
                                     mailToSend=EMail.parseEmail(mailString);
-                                    LOGGER.debug("parsed  -> "+mailToSend.toString());
+                                    LOGGER.log("parsed  -> "+mailToSend.toString());
                                     tpm=mailToSend.getRecipients();
                                     Scanner l =new Scanner(tpm).useDelimiter(("\\s*,\\s*"));
                                     String mailID = model.nextId();
                                     mailToSend.setId(mailID);
-                                    LOGGER.debug("sent answer: Done "+mailID);
+                                    LOGGER.log("sent answer: Done "+mailID);
                                     serverAnswer.println("Done "+mailID);
                                     model.addLog(
                                             new Log ("Sent response (Done "+mailID+") to client", client.getEmail(),ServerModel.dateToString(), ip  ));
-
+                                    //Individuare singolarmente tutti i destinatari
                                     while (l.hasNext()){
                                         receiver=l.next();
                                         Account receiverAccount = model.accounts.get(receiver);
-                                        LOGGER.debug("checking receiver: "+receiver);
+                                        LOGGER.log("checking receiver: "+receiver);
                                         if (receiverAccount != null){
-                                            LOGGER.debug("updating arrived file for "+receiver);
-
+                                            LOGGER.log("updating arrived file for "+receiver);
+                                            //Hashmap mantiene la corrispondenza tra indirizzo mail e file
                                             FileHandler receiverArrivedFile = model.arrivedFileHandler.get(receiver);
                                             receiverArrivedFile.add(mailToSend);
                                         }else{
                                             String textReply= "Receiver \""+receiver+"\" does not exist";
-                                            LOGGER.debug("receiver not found "+receiver);
-                                            LOGGER.debug("sending notification back to "+mailToSend.getSender());
-                                            EMail errorReply = new EMail(mailID, Utilities.dateString(), ServerModel.MAIL_SERVER, mailToSend.getSender(), "Message not delivered", textReply + Utilities.getReplyText(mailToSend, "Original message", "> "));
+                                            LOGGER.log("receiver not found "+receiver);
+                                            LOGGER.log("sending notification back to "+mailToSend.getSender());
+                                            EMail errorReply = new EMail(mailID, Utilities.dateString(), ServerModel.MAIL_SERVER, mailToSend.getSender(), "Message not delivered", textReply + Utilities.getReplyText(mailToSend, "Original message"));
 
                                             FileHandler senderArrivedFile = model.arrivedFileHandler.get(localAccount.getEmail());
                                             senderArrivedFile.add(errorReply);
-                                            LOGGER.debug("notification sent to "+mailToSend.getSender());
+                                            LOGGER.log("notification sent to "+mailToSend.getSender());
                                         }
 
                                     }
 
-                                    LOGGER.debug("updating file sent of "+localAccount.getEmail());
+                                    LOGGER.log("updating file sent of "+localAccount.getEmail());
 
                                     FileHandler senderSentFile = model.sentFileHandler.get(localAccount.getEmail());
                                     senderSentFile.add(mailToSend);
@@ -178,15 +163,14 @@ public class ClientHandlerThread extends Thread{
                                 break;
 
                             case "delete":
-                                LOGGER.debug("---------------delete case: ");
+                                LOGGER.log("---------------delete case: ");
 
                                 String mailToDelete;
-                                List<EMail> list=new ArrayList<>();
                                 String selection = param.toUpperCase();
-                                LOGGER.debug("delete selection: '"+selection+"'");
+                                LOGGER.log("delete selection: '"+selection+"'");
                                 try{
                                     mailToDelete= inputLine.nextLine();
-                                    LOGGER.debug("mail to delete: "+mailToDelete);
+                                    LOGGER.log("mail to delete: "+mailToDelete);
 
                                     switch (selection){
                                         case "ARRIVED":
@@ -197,15 +181,15 @@ public class ClientHandlerThread extends Thread{
 
                                             break;
                                         default:
-                                            LOGGER.debug("selection not allowed '"+selection+"'");
+                                            LOGGER.log("selection not allowed '"+selection+"'");
                                             throw new IllegalStateException("Param required for delete (ARRIVED or SENT)");
 
                                     }
-                                    LOGGER.debug("sending Done to client");
+                                    LOGGER.log("sending Done to client");
                                     serverAnswer.println("Done");
                                     model.addLog(
                                             new Log ("Sent response (Done) to client", client.getEmail(),ServerModel.dateToString(), ip  ));
-                                    LOGGER.debug("end delete");
+                                    LOGGER.log("end delete");
                                 }
                                 catch(Exception e){
                                     e.printStackTrace();
@@ -214,14 +198,12 @@ public class ClientHandlerThread extends Thread{
                                 break;
 
                             case "quit":
-                                LOGGER.debug("---------------quit case: ");
+                                LOGGER.log("---------------quit case: ");
                                 stop = true;
-
                                 break;
 
                             default:
-                                LOGGER.debug("sending invalid command to client");
-
+                                LOGGER.log("sending invalid command to client");
                                 serverAnswer.println("Error: invalid command "+command);
                                 model.addLog(
                                         new Log ("invalid command ("+s+")", client.getEmail(),ServerModel.dateToString(), ip  ));
@@ -236,28 +218,25 @@ public class ClientHandlerThread extends Thread{
 
                     }
                 }
-
-
             }
 
         }
         catch (Exception e){
             e.printStackTrace();
             String details = e.getClass().getName()+" "+e.getMessage();
-            LOGGER.error("I/O error: "+details);
+            LOGGER.log("I/O error: "+details);
             model.addLog(
                     new Log ("Connection Error ("+details+")", email,ServerModel.dateToString(), ip  ));
         }
         finally {
-            LOGGER.info("Closing connection... ");
-            model.prec.remove(this);
+            LOGGER.log("Closing connection... ");
             try {
                 listening.close();
                 model.addLog(
                         new Log ("Connection closed", email,ServerModel.dateToString(), ip  ));
-                LOGGER.info("Closing connection... OK");
+                LOGGER.log("Closing connection... OK");
             } catch (IOException e) {
-                LOGGER.error("Error on closing connection" +e.getMessage());
+                LOGGER.log("Error on closing connection" +e.getMessage());
                 model.addLog(
                         new Log ("Error on closing connection ("+e.getMessage()+")", email,ServerModel.dateToString(), ip  ));
                 e.printStackTrace();

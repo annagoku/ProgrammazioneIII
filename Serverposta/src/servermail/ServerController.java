@@ -2,17 +2,20 @@ package servermail;
 
 import commons.SystemLogger;
 import javafx.application.Platform;
-import javafx.collections.ListChangeListener;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
 import javafx.scene.paint.Color;
+import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 
-
-import java.io.*;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
 import java.util.concurrent.TimeUnit;
@@ -41,19 +44,21 @@ public class ServerController implements Initializable {
     private Button disconnect;
 
     private ServerModel model;
+    private Stage primaryStage;
 
-    public void init(ServerModel m){
+    public void init(ServerModel m, Stage s){
         if (this.model!=null){
             throw new IllegalStateException("Il modello può essere inizializzato una sola volta");
         }
         this.model=m;
-        //aggancio l'observable list alla tabella
+        this.primaryStage=s;
+        //aggancio l'observable list alla table view
         logHistory.setItems(model.getLog());
-
 
         try {
             //carica gli account
             model.loadAccounts();
+            //carica i log dal file logs
             model.loadLogs();
         } catch (FileNotFoundException e) {
             state.setText("Error: accounts file not found");
@@ -62,7 +67,7 @@ public class ServerController implements Initializable {
         }
         catch (Exception e) {
             e.printStackTrace();
-            state.setText("generic Error on load accounts"+e.getMessage());
+            state.setText("Generic Error on load accounts"+e.getMessage());
             state.setTextFill(Color.RED);
             connect.setDisable(true);
         }
@@ -80,18 +85,31 @@ public class ServerController implements Initializable {
             connect.setDisable(true);
         }
 
-
-
+        // Gestione esplicita evento Windows close
+        primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
+            @Override
+            public void handle(WindowEvent event) {
+                LOGGER.log("window close");
+                try {
+                    model.endconnect();
+                    model.saveId();
+                    model.saveLogs();
+                } catch (Exception e) {
+                    LOGGER.log(e.getMessage());
+                    e.printStackTrace();
+                }
+                finally {
+                    Platform.exit();
+                    System.exit(0);
+                }
+            }
+        });
     }
 
 
-
-
-
-
-
+    @FXML
     public void handleconnection(ActionEvent e) {
-        LOGGER.debug("pressed Connect button");
+        LOGGER.log("pressed Connect button");
         model.startconnect();
         state.setText("Connected");
         state.setTextFill(Color.GREEN);
@@ -100,35 +118,26 @@ public class ServerController implements Initializable {
 
     }
 
+    @FXML
     public void handleclose(ActionEvent e) {
-        LOGGER.debug("pressed Close button");
+        LOGGER.log("pressed Close button");
         model.exec.shutdown();
-
-
-        /*if(model.prec.size()>0) {
-            for (Thread t : model.prec) {
-                try {
-                    t.join();
-                }catch (InterruptedException j) {
-                    j.printStackTrace();
-                }
-            }
-        }*/
         try {
             model.endconnect();
             state.setText("Disconnect");
             state.setTextFill(Color.RED);
             disconnect.setDisable(true);
             connect.setDisable(false);
+            //attesa di max 30 secondi per far terminare tutti i thread del pool
             model.exec.awaitTermination(30, TimeUnit.SECONDS);
         } catch (IOException ex) {
-            LOGGER.error(ex.getMessage());
+            LOGGER.log(ex.getMessage());
             ex.printStackTrace();
             state.setText("Disconnect error: "+ex.getMessage());
             state.setTextFill(Color.RED);
         } catch (InterruptedException ex) {
             ex.printStackTrace();
-            LOGGER.error(ex.getMessage());
+            LOGGER.log(ex.getMessage());
             state.setText("Timeout in stopping clients: "+ex.getMessage());
             state.setTextFill(Color.RED);
         }
@@ -142,7 +151,7 @@ public class ServerController implements Initializable {
         disconnect.setDisable(true);
         logHistory.setPlaceholder(new Label("No logs to display"));
 
-        //Binding tra observable list di Log e tableview
+        //Binding tra colonne tableview e properties observable list di Log
         date.setCellValueFactory(cellData -> cellData.getValue().dateProperty());
         message.setCellValueFactory(cellData -> cellData.getValue().mesProperty());
         client.setCellValueFactory(cellData -> cellData.getValue().clientProperty());

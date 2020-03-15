@@ -2,12 +2,10 @@ package clientmail;
 
 import commons.EMail;
 import commons.SystemLogger;
-import commons.Utilities;
 import javafx.application.Platform;
 import javafx.scene.control.Alert;
 
 import java.io.*;
-import java.net.InetAddress;
 import java.net.Socket;
 import java.util.Scanner;
 import java.util.regex.Matcher;
@@ -36,7 +34,7 @@ public class SendThread extends Thread {
         }
 
         try {
-            LOGGER.debug("connection to "+model.host+":"+model.port);
+            LOGGER.log("connection to "+model.host+":"+model.port);
             s = new Socket(model.host, model.port);
             try {
                 OutputStream out = s.getOutputStream();
@@ -45,15 +43,15 @@ public class SendThread extends Thread {
                 ObjectInputStream clientObjIn = new ObjectInputStream(in);
                 Scanner clientIn = new Scanner(in);
                 PrintWriter clientPrint = new PrintWriter(out, true);
-
+                //Comunica il proprio account identificativo al Server
                 clientObjOut.writeObject(model.getAccount());
 
                 String serverAnswer = clientIn.nextLine();
-                LOGGER.debug("Server says '" +serverAnswer+"'");
+                LOGGER.log("Server says '" +serverAnswer+"'");
 
                 if (serverAnswer.equals("Ready")) {
 
-                    LOGGER.debug("sending email... "+mailSend.toString());
+                    LOGGER.log("sending email... "+mailSend.toString());
                     clientPrint.println("Send");
                     clientPrint.println(mailSend.toString());
 
@@ -71,17 +69,17 @@ public class SendThread extends Thread {
                     final String messageFromServer = res;
 
                     Matcher m = patternDone.matcher(res);
-                    LOGGER.debug("Server answer ->" +res);
+                    LOGGER.log("Server answer ->" +res);
 
                     if(m.matches()) {
+                        //Aggiunge alla mail l'id fornito dal server
                         String mailID = m.group(1);
                         mailSend.setId(mailID);
+                        //Aggiorna il file della posta inviata
                         model.getFileSent().add(mailSend);
-
+                        //Aggiorna la table view sulla base di un aggiornamento in accesso esclusivo dell' observable list
                         model.sem.acquire();
                         model.getMailSent().add(mailSend);
-
-                        model.sem.release();
                     }
                     else {
                         Platform.runLater(
@@ -92,47 +90,40 @@ public class SendThread extends Thread {
                                         alert.setContentText(messageFromServer);
                                         alert.show();
                                     }
-
                         );
-
-
                     }
-
                 }
                 s.close();
             } catch (Exception e) {
                 e.printStackTrace();
                 Platform.runLater(
                         () -> {
-
                                 Alert alert = new Alert(Alert.AlertType.ERROR);
                                 alert.setHeaderText("Cannot send mail");
                                 alert.setContentText(e.getMessage());
                                 alert.show();
                             }
-
                 );
+            }
+            finally{
+                model.sem.release();
             }
         } catch (IOException e) {
             e.printStackTrace();
             Platform.runLater(
                     () -> {
-
                             Alert alert = new Alert(Alert.AlertType.ERROR);
                             alert.setHeaderText("Cannot send mail");
                             alert.setContentText(e.getMessage());
                             alert.show();
                         }
-
             );
         }
         finally {
             Platform.runLater(
                     () -> {
-
                             model.setClientOperation("");
                         }
-
             );
         }
     }

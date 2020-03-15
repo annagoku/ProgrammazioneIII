@@ -9,17 +9,18 @@ import java.util.Scanner;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
-import java.util.function.Predicate;
 
+//Classe per la gestione di accessi in lettura e/o scrittura ai file
 public class FileHandler {
     private File f;
     private String filename;
+    //Utilizzo dei ReadWrite Lock per concedere Lock condivisi o esclusivi
+    // rispettivamente per l'operazione di lettura o scrittura su file
     private final ReadWriteLock readWriteLock = new ReentrantReadWriteLock();
-
     private final Lock readLock = readWriteLock.readLock();
-
     private final Lock writeLock = readWriteLock.writeLock();
 
+    //Costruttore
     public FileHandler(String filename) {
         this.filename = filename;
         this.f = new File(filename);
@@ -29,6 +30,7 @@ public class FileHandler {
         }
     }
 
+    //Metodi per aggiungere una mail in append ad un file csv
     public void add(String id, String eMail) {
         PrintWriter pw = null;
         writeLock.lock();
@@ -37,7 +39,7 @@ public class FileHandler {
             pw.println(eMail);
 
         } catch (IOException e) {
-            System.out.println(getClass().getName()+" cannot add email "+id+" to file "+filename+" "+e.getMessage());
+            System.out.println("FileHandler cannot add email "+id+" to file "+filename+" "+e.getMessage());
         } finally {
             if(pw != null) {
                 pw.close();
@@ -50,6 +52,7 @@ public class FileHandler {
         add(eMail.getId(), eMail.toString());
     }
 
+    //Metodi per aggiungere una lista di oggetti EMail in append in un file csv
     public void addAll(List<EMail> l) {
         PrintWriter pw = null;
         writeLock.lock();
@@ -59,7 +62,7 @@ public class FileHandler {
                 pw.println(e.toString());
 
         } catch (IOException e) {
-            System.out.println(getClass().getName()+" cannot add obj to file "+filename+" "+e.getMessage());
+            System.out.println("FileHandler cannot add obj to file "+filename+" "+e.getMessage());
         } finally {
             if(pw != null) {
                 pw.close();
@@ -68,28 +71,7 @@ public class FileHandler {
         }
     }
 
-    public void saveList(List<EMail> l) {
-        PrintWriter pw = null;
-        writeLock.lock();
-        try {
-            pw = new PrintWriter(new FileWriter(f), true);
-            for(EMail obj: l)
-                pw.println(obj.toString());
-
-        } catch (IOException e) {
-            System.out.println(getClass().getName()+" cannot save list to file "+filename+" "+e.getMessage());
-        } finally {
-            if(pw != null) {
-                pw.close();
-            }
-            writeLock.unlock();
-        }
-    }
-
-    public boolean remove(EMail eToDelete) {
-        return remove(eToDelete.getId());
-    }
-
+    //Metodo per rimuovere una mail da un file noto l'id
     public boolean remove(String mailID) {
         Scanner mailIn =null;
         PrintWriter pw = null;
@@ -118,7 +100,7 @@ public class FileHandler {
 
             }
         } catch (IOException e) {
-            System.out.println(getClass().getName()+" cannot remove email from file "+filename+" "+e.getMessage());
+            System.out.println("FileHandler cannot remove email from file "+filename+" "+e.getMessage());
         }  finally {
             writeLock.unlock();
             return  deleted;
@@ -126,16 +108,16 @@ public class FileHandler {
 
     }
 
+
+    //Metodi per ritornare una lista di oggetti EMail posteriori ad un definito timestamp
     public List<EMail> readList() {
         return readList(null);
     }
 
+
     public List<EMail> readList(String timeStamp) {
         Scanner mailIn =null;
         List<EMail> list = new ArrayList<>();
-
-
-
         readLock.lock();
         try {
             Date timestampDate = null;
@@ -147,8 +129,6 @@ public class FileHandler {
                 while (mailIn.hasNextLine()) {
                     String tmp = mailIn.nextLine();
                     EMail mail = EMail.parseEmail(tmp);
-
-
                     if(timeStamp != null) {
                         Date emailDate = Utilities.DATE_FORMAT.parse(mail.getTime());
                         if(emailDate.after(timestampDate))
@@ -157,14 +137,10 @@ public class FileHandler {
                     else {
                         list.add(mail);
                     }
-
-
                 }
-
             }
-
         } catch (FileNotFoundException | ParseException e) {
-            System.out.println(getClass().getName()+" cannot get list from file "+filename+" "+e.getMessage());
+            System.out.println("FileHandler cannot get list from file "+filename+" "+e.getMessage());
         } finally {
             if(mailIn!= null) {
                 mailIn.close();
@@ -174,6 +150,7 @@ public class FileHandler {
         return list;
     }
 
+    //Metodi per ritornare una lista di stringhe mail posteriori ad un definito timestamp
     public List<String> readListString() {
         return readListString(null);
     }
@@ -181,9 +158,6 @@ public class FileHandler {
     public List<String> readListString(String timeStamp) {
         Scanner mailIn =null;
         List<String> list = new ArrayList<>();
-
-
-
         readLock.lock();
         try {
             Date timestampDate = null;
@@ -211,7 +185,7 @@ public class FileHandler {
             }
 
         } catch (FileNotFoundException | ParseException e) {
-            System.out.println(getClass().getName()+" cannot get list from file "+filename+" "+e.getMessage());
+            System.out.println("FileHandler cannot get list from file "+filename+" "+e.getMessage());
         } finally {
             if(mailIn!= null) {
                 mailIn.close();
@@ -220,5 +194,4 @@ public class FileHandler {
         }
         return list;
     }
-
 }

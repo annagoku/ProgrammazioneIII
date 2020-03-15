@@ -1,13 +1,12 @@
 package clientmail;
 
+import commons.EMail;
 import commons.Utilities;
-import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.stage.Stage;
-import commons.EMail;
 
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -84,7 +83,7 @@ public class ModalEmailController implements Initializable {
                     valueText.setText(Utilities.getReplyText(mailsel));
                 }
                 break;
-            case "MOUSEEVENT":
+            case "MOUSEEVENT": //2-click per sola visualizzazione
                 if(mail!=null){
                     this.mailsel=mail;
                     valueSender.setText(mailsel.getSender());
@@ -111,7 +110,6 @@ public class ModalEmailController implements Initializable {
     public void handleSend(ActionEvent event){
 
         //controllo correttezza indirizzo destinatario lato client
-
         if(!EMail.recipientsValid(valueRecipients.getText())){
             Alert alert = new Alert(Alert.AlertType.ERROR);
             alert.setHeaderText("Mail address not valid");
@@ -125,7 +123,6 @@ public class ModalEmailController implements Initializable {
                     valueRecipients.getText(),
                     valueObject.getText(),
                     valueText.getText());
-
 
             model.setClientOperation("Sending mail");
             new SendThread(model,email).start();

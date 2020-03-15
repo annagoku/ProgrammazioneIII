@@ -1,13 +1,10 @@
 package servermail;
 
+import commons.Account;
 import commons.FileHandler;
 import commons.SystemLogger;
-import javafx.application.Platform;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -16,10 +13,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import commons.Account;
 
 public class ServerModel {
 
@@ -31,27 +25,22 @@ public class ServerModel {
     public ServerSocket s = null;
     public Socket listening = null;
 
-    //Thread di connessione
-    public Connessione connect;
-
     //Thread di salvataggioLog
     SaveLogDaemonThread daemonLog=null;
 
-    //Lista di connessioni client attive
-    List<ClientHandlerThread> prec = new ArrayList<>();
-
+    //Dichiarazione di un pool di Thread per la gestione delle richieste client
     ExecutorService exec = Executors.newFixedThreadPool(100);
 
-    //gestione binding loglist_tableView
+    //Dichiarazione di una Observable list per i Log
     public ObservableList<Log> logHistory = FXCollections.observableArrayList();
     public ObservableList<Log> getLog() {
         return logHistory;
     }
 
+    //Hash maps per mantenere la corrispondenza tra indirizzo mail, oggetto account e oggetti fileHandler
     Map<String, Account> accounts=new HashMap<>();
     Map<String, FileHandler> arrivedFileHandler=new HashMap<String, FileHandler>();
     Map<String, FileHandler> sentFileHandler=new HashMap<String, FileHandler>();
-
 
 
     //Generazione ID mail univoci in mutua esclusione
@@ -72,13 +61,13 @@ public class ServerModel {
 
     }
 
-    //costruttore ServerModel
+    //Costruttore ServerModel
     public ServerModel(){
-        daemonLog=new SaveLogDaemonThread(logHistory,this);
+        daemonLog=new SaveLogDaemonThread(this);
         daemonLog.start();
     }
 
-    // gestione connessione
+    // Thread per la connessione
     public class Connessione extends Thread {
         ServerModel model = null;
 
@@ -88,30 +77,25 @@ public class ServerModel {
         }
 
         public void run() {
-            LOGGER.info("Connecting");
+            LOGGER.log("Connecting");
             try {
                 s = new ServerSocket(8089);
                 while (true) {
-                    LOGGER.info("waiting for connections");
+                    LOGGER.log("waiting for connections");
                     listening = s.accept();
-                    LOGGER.info("new connection accepted... creating clientHandler");
+                    LOGGER.log("new connection accepted... creating clientHandler");
                     ClientHandlerThread h = new ClientHandlerThread(listening, model);
-                    prec.add(h);
                     exec.execute(h);
-
-
-
                 }
             }catch (IOException e) {
-                LOGGER.error("Interruzione del server ("+e.getMessage()+")");
+                LOGGER.log("Interruzione del server ("+e.getMessage()+")");
             }
-
             finally {
                 try {
-                    LOGGER.info("disconnecting...");
+                    LOGGER.log("disconnecting...");
                     if(listening != null)
                         listening.close();
-                    LOGGER.info("disconnected");
+                    LOGGER.log("disconnected");
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -121,25 +105,21 @@ public class ServerModel {
         }
     }
 
+    //Aggiornamento observable list Log in mutua esclusione
     public synchronized void addLog(Log l) {
         this.logHistory.add(l);
     }
 
+    //Aggiornamento file Log in mutua esclusione
     public synchronized void saveLogs() throws IOException {
-
             PrintWriter saveLog = new PrintWriter(new FileWriter("./data/Log.csv", true), true);
 
-
-
-            LOGGER.info("saving logs");
-
+            LOGGER.log("saving logs");
             int i = 0;
             for (i=lastPos; i<logHistory.size(); i++) {
                 saveLog.println(logHistory.get(i).toString());
             }
             lastPos=i;
-
-
     }
 
     //metodo statico per convertire il timestamp in String
@@ -151,10 +131,8 @@ public class ServerModel {
     }
 
 
-
     //Caricamento elenco account all'avvio
-
-    public void loadAccounts() throws FileNotFoundException, Exception {
+    public void loadAccounts() throws Exception {
         File f=new File("./data/accounts.csv");
         Scanner rr = new Scanner(f);
         String s = null;
@@ -171,20 +149,19 @@ public class ServerModel {
         rr.close();
     }
 
-
-    public void loadLogs() throws FileNotFoundException, Exception {
+    //Caricamento log da file all'avvio
+    public void loadLogs() throws Exception {
         File f=new File("./data/Log.csv");
         Scanner rr = new Scanner(f);
         while( rr.hasNextLine()) {
-
             logHistory.add(Log.parseLog(rr.nextLine()));
         }
         rr.close();
     }
 
-    public void loadNextId()throws FileNotFoundException, Exception  {
+    //Caricamento del progressivo mail id da file
+    public void loadNextId()throws Exception  {
         File f=new File("./data/generateId.csv");
-
         if(f.exists()){
             if(f.length()==0) {
                 countId = new AtomicInteger();
@@ -200,14 +177,11 @@ public class ServerModel {
 
     }
 
-
-    //Salvataggio progressivo ID in chiusura
-    public void saveId()throws FileNotFoundException, Exception{
+    //Salvataggio in sovrescrittura del progressivo ID in chiusura
+    public void saveId()throws Exception{
         PrintWriter saveId =new PrintWriter (new FileWriter("./data/generateId.csv"));
         saveId.println(countId.get());
         saveId.close();
-
-
     }
 
     public String nextId() {

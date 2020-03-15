@@ -8,9 +8,9 @@ import java.util.*;
 
 public class EMail {
 
-    public static String EMAIL_PATTERN =  "^[\\w-_\\.+]*[\\w-_\\.]\\@([\\w]+\\.)+[\\w]+[\\w]$";
+    public static String EMAIL_PATTERN = "^[\\w_\\.-]+@[\\w-]+\\.[\\w]+$";
 
-
+    //Dichiarazione delle Property
     private  StringProperty id=new SimpleStringProperty();
     private  StringProperty sender=new SimpleStringProperty();
     private  StringProperty recipients=new SimpleStringProperty();
@@ -18,7 +18,7 @@ public class EMail {
     private  StringProperty text= new SimpleStringProperty();
     private  StringProperty time= new SimpleStringProperty();
 
-
+    //Definizione dei metodi getter e setter perr ogni Property
 
     //Property id
     public  StringProperty idProperty() {
@@ -108,6 +108,7 @@ public class EMail {
         return getId()+";"+ getTime()+";"+getSender()+";"+getRecipients()+";"+ getSubject()+";"+Utilities.escapeText(getText());
     }
 
+    //Genera un oggetto EMail a partire da una stringa contenente le sue variabili
     public static EMail parseEmail(String s) throws IllegalArgumentException {
         try {
             String[] tokens = s.split(";");

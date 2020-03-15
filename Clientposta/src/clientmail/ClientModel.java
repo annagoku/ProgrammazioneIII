@@ -1,30 +1,27 @@
 package clientmail;
 
 import commons.Account;
+import commons.EMail;
 import commons.FileHandler;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import commons.EMail;
 
-import java.net.Socket;
 import java.util.Properties;
 import java.util.concurrent.Semaphore;
 
 public class ClientModel {
     private Properties props = null;
+    //Dichiarazione Observable List per le mail in arrivo ed inviate
     private ObservableList<EMail> mailArrived= FXCollections.observableArrayList();
     private ObservableList<EMail> mailSent=FXCollections.observableArrayList();
-    private FileHandler fileSent = null;
-    private FileHandler fileArrived = null;
+    private FileHandler fileSent;
+    private FileHandler fileArrived;
     private Account casella;
-    private String timestamp;// todo
     public String host;
     public int port;
-    public Socket socket;
-    // Strumenti di sincronizzazione
-    public final Object lock = new Object();
+    // Strumento di sincronizzazione per l'accesso esclusivo alle Observable List
     public Semaphore sem= new Semaphore(1);
 
 
@@ -59,6 +56,7 @@ public class ClientModel {
         new ReceiveThread(this, true, true).start();
     }
 
+
     public FileHandler getFileSent() {
         return fileSent;
     }
@@ -81,14 +79,13 @@ public class ClientModel {
         return casella.getEmail();
     }
 
-    //caricamento all'avvio di mail ricevute e inviate salvate in csv
+    //Caricamento all'avvio di mail ricevute e inviate  salvate in csv nelle rispettive liste
     public void loadMailArrived()  {
         try{
             mailArrived.addAll(fileArrived.readList());
 
         }catch (Exception e){
             e.printStackTrace();
-
         }
     }
 

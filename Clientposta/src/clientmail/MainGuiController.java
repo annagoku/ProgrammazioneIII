@@ -1,13 +1,12 @@
 package clientmail;
 
+import commons.EMail;
 import javafx.application.Platform;
-import javafx.beans.property.SimpleObjectProperty;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
-import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
@@ -16,15 +15,11 @@ import javafx.scene.layout.Pane;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
-
+import javafx.stage.WindowEvent;
 
 import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
-
-import commons.EMail;
-import javafx.stage.WindowEvent;
-import javafx.util.Callback;
 
 public class MainGuiController implements Initializable {
 
@@ -50,8 +45,6 @@ public class MainGuiController implements Initializable {
 
     //Configure Buttons
     @FXML
-    private Button newMail;
-    @FXML
     private Button replayMail;
     @FXML
     private Button replayAllMail;
@@ -59,11 +52,8 @@ public class MainGuiController implements Initializable {
     private Button forwardMail;
     @FXML
     private Button deleteMail;
-    @FXML
-    private Button receiveMail;
 
-
-    //Configure Label
+    //Configure Label current action Client
     @FXML
     private Label action;
 
@@ -89,41 +79,40 @@ public class MainGuiController implements Initializable {
 
 
 
-    //metodo di inizializzazione model/controller
+    //Metodo di inizializzazione Model/Controller
     public void initModel(ClientModel model, Stage pm) {
         if (this.model != null) {
-            throw new IllegalStateException("Model può essere inizializzato una sola volta");
+            throw new IllegalStateException("Il Model può essere inizializzato una sola volta");
         }
         this.model = model;
         this.primaryStage = pm;
-
 
         //aggancio l'observable list alla tabella
         tableArrived.setItems(model.getMailArrived());
 
         tableSent.setItems(model.getMailSent());
 
-        //Bindings for operation on going
+        //Bindings per operation on going
         action.textProperty().bind(this.model.clientOperationProperty());
 
-        // Binding tableArrived
+        // Binding tra colonne tableArrived e properties della classe EMail
         dateArrived.setCellValueFactory(cellData -> cellData.getValue().timeProperty());
         sender.setCellValueFactory(cellData -> cellData.getValue().senderProperty());
         objectArrived.setCellValueFactory(cellData -> cellData.getValue().subjectProperty());
 
-        // Binding tableSent
+        // Binding tra colonne tableArrived e properties della classe EMail
         dateSent.setCellValueFactory(cellData -> cellData.getValue().timeProperty());
         recipients.setCellValueFactory(cellData -> cellData.getValue().recipientsProperty());
         objectSent.setCellValueFactory(cellData -> cellData.getValue().subjectProperty());
 
-        // Listen for selection changes and show the mail details when changed.
+        // Listen per selezione su riga e visializzazione dettaglio mail
         tableArrived.getSelectionModel().selectedItemProperty().addListener(
                 (observable, oldValue, newValue) -> showMailDetails(newValue));
 
         tableSent.getSelectionModel().selectedItemProperty().addListener(
                 (observable, oldValue, newValue) -> showMailDetails(newValue));
 
-        // handles window close -> shutdown application
+        // Gestione esplicita evento Windows close
         primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
             @Override
             public void handle(WindowEvent event) {
@@ -139,12 +128,10 @@ public class MainGuiController implements Initializable {
     @FXML
     public void handleReceive(){
         model.setClientOperation("Loading mail from server....");
-
         new ReceiveThread(model, false, false).start();
-
     }
 
-    //Cancellazione mail da client e Server
+    //Cancellazione mail da client e Server su evento button Delete
     @FXML
     public void handleDelete() {
         // 0 - arrived, 1 - sent
@@ -159,8 +146,6 @@ public class MainGuiController implements Initializable {
                 new DeleteThread(DeleteThread.Selection.SENT, model, selectedEmail).start();
         }
     }
-
-
 
     //Selezione mail su click su riga arrived/sent
     public void showMailDetails(EMail mail){
@@ -185,39 +170,38 @@ public class MainGuiController implements Initializable {
         loader.load();
         Parent root = loader.getRoot();
         Stage modal_dialog = new Stage(StageStyle.DECORATED);
-        modal_dialog.initModality(Modality.WINDOW_MODAL);
+        modal_dialog.initModality(Modality.WINDOW_MODAL); //Def modalità Windows
         modal_dialog.initOwner(primaryStage);
         Scene scene = new Scene(root);
         modal_dialog.setTitle("Client posta "+ model.getCasella());
 
-        ModalEmailController mc = (ModalEmailController) loader.getController();
+        ModalEmailController mc = loader.getController();
         commandEvent=((Button)event.getSource()).getText();
         mc.initModel(this.model,selectedEmail, commandEvent, modal_dialog, action);
         modal_dialog.setScene(scene);
         modal_dialog.show();
     }
 
+    //Gestione doppio-click con mouse
     @FXML
     public void handleActionMouseArrived (MouseEvent event)throws IOException {
         EMail email =  tableArrived.getSelectionModel().selectedItemProperty().get();
         showMailDetails(email);
-        //gestione doppio-click
         if(event.getClickCount() == 2) {
             openMailDialog();
         }
     }
-
 
     @FXML
     public void handleActionMouseSent (MouseEvent event)throws IOException {
         EMail email =  tableSent.getSelectionModel().selectedItemProperty().get();
         showMailDetails(email);
-        //gestione doppio-click
         if(event.getClickCount() == 2) {
             openMailDialog();
         }
     }
 
+    //Apertura nuova finestra di dialogo
     private void openMailDialog() throws IOException {
         FXMLLoader loader = new FXMLLoader(getClass().getResource("ModalEmail.fxml"));
         loader.load();

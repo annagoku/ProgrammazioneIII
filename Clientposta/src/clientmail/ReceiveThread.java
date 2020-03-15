@@ -7,12 +7,9 @@ import javafx.application.Platform;
 import javafx.scene.control.Alert;
 
 import java.io.*;
-import java.net.InetAddress;
 import java.net.Socket;
-import java.util.Collections;
 import java.util.List;
 import java.util.Scanner;
-import java.util.stream.Collectors;
 
 public class ReceiveThread extends Thread {
     private ClientModel model;
@@ -31,13 +28,15 @@ public class ReceiveThread extends Thread {
     }
 
     public void run() {
-        LOGGER.info(prefixLog+" running..");
+        LOGGER.log(prefixLog+" running..");
         if(demon) {
             while(true) {
                 try {
                     Thread.sleep(60000);
                 } catch (InterruptedException e) {
                 }
+                //L'istruzione seguente si inserisce quando l'aggiornamento della UI è indicata in un
+                //thread diverso da quello principale di Java FX. Viene messo in coda e gestito alla fine da UI Java FX Thread
                 Platform.runLater(() -> {
                     model.setClientOperation("Loading mail from server....");
                 });
@@ -56,10 +55,9 @@ public class ReceiveThread extends Thread {
 
     private void receiveLogic() {
 
-
         Socket s = null;
         try {
-            LOGGER.debug(prefixLog+"connection to "+model.host+":"+model.port);
+            LOGGER.log(prefixLog+"connection to "+model.host+":"+model.port);
             s = new Socket(model.host, model.port);
             try {
                 OutputStream out = s.getOutputStream();
@@ -69,9 +67,10 @@ public class ReceiveThread extends Thread {
                 Scanner clientIn = new Scanner(in);
                 PrintWriter clientPrint = new PrintWriter(out, true);
 
+                //Comunica il proprio account identificativo al Server
                 clientObjOut.writeObject(model.getAccount());
                 String serverAnswer = clientIn.nextLine();
-                LOGGER.info(prefixLog+"Server says '"+serverAnswer+"'");
+                LOGGER.log(prefixLog+"Server says '"+serverAnswer+"'");
 
                 if (serverAnswer.equals("Ready")) {
                     String timestamp = "";
@@ -81,7 +80,7 @@ public class ReceiveThread extends Thread {
                     }
                     clientPrint.println("Receive "+timestamp);
                     serverAnswer = clientIn.nextLine();
-                    LOGGER.info(prefixLog+"server answer -> "+serverAnswer);
+                    LOGGER.log(prefixLog+"server answer -> "+serverAnswer);
                     if(serverAnswer.equals("Done")) {
                         List<String> stringList = null;
 
@@ -94,14 +93,13 @@ public class ReceiveThread extends Thread {
                             throw e;
                         }
 
-
-
                         List<EMail> list = Utilities.readNewEmailsFromStringList(stringList);
 
 
-                        //aggiorna il file
+                        //Aggiorna il file della posta arrivata
                         model.getFileArrived().addAll(list);
 
+                        //Aggiorna la table view sulla base di un aggiornamento in accesso esclusivo dell' observable list
                         Platform.runLater(
                                 () -> {
                                     try {
@@ -113,8 +111,8 @@ public class ReceiveThread extends Thread {
                                             alert.show();
                                         }
                                         else if(!automatic) {
-                                            // We show alert for no mail only if the thread is started manually
-                                            // (from receive button)
+                                            // L'alert viene visualizzato solo se il receive è manuale
+                                            // (da receive button)
                                             Alert alert = new Alert(Alert.AlertType.INFORMATION);
                                             alert.setHeaderText("No new mail");
                                             alert.show();
@@ -131,7 +129,7 @@ public class ReceiveThread extends Thread {
                     }
                 }
                 else {
-                    LOGGER.error(prefixLog+"error on receiving. Server says "+serverAnswer);
+                    LOGGER.log(prefixLog+"error on receiving. Server says "+serverAnswer);
                 }
 
 
@@ -164,7 +162,6 @@ public class ReceiveThread extends Thread {
         }
         finally {
             Platform.runLater(() -> {
-
                     model.setClientOperation("");                }
             );
         }
