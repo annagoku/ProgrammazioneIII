@@ -179,7 +179,7 @@ public class ServerModel {
 
     //Salvataggio in sovrescrittura del progressivo ID in chiusura
     public void saveId()throws Exception{
-        PrintWriter saveId =new PrintWriter (new FileWriter("./data/generateId.csv"));
+        PrintWriter saveId =new PrintWriter (new FileWriter("./data/generateId.csv"),true);
         saveId.println(countId.get());
         saveId.close();
     }

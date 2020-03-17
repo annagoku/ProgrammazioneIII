@@ -32,7 +32,7 @@ public class ReceiveThread extends Thread {
         if(demon) {
             while(true) {
                 try {
-                    Thread.sleep(60000);
+                    Thread.sleep(90000);
                 } catch (InterruptedException e) {
                 }
                 //L'istruzione seguente si inserisce quando l'aggiornamento della UI è indicata in un

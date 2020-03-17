@@ -87,7 +87,7 @@ public class MainGuiController implements Initializable {
         this.model = model;
         this.primaryStage = pm;
 
-        //aggancio l'observable list alla tabella
+        //aggancio le observable list alla tabella
         tableArrived.setItems(model.getMailArrived());
 
         tableSent.setItems(model.getMailSent());

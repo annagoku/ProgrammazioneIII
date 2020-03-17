@@ -18,7 +18,7 @@ public class EMail {
     private  StringProperty text= new SimpleStringProperty();
     private  StringProperty time= new SimpleStringProperty();
 
-    //Definizione dei metodi getter e setter perr ogni Property
+    //Definizione dei metodi getter e setter per ogni Property
 
     //Property id
     public  StringProperty idProperty() {

@@ -12,7 +12,7 @@ import java.util.Properties;
 import java.util.concurrent.Semaphore;
 
 public class ClientModel {
-    private Properties props = null;
+    private Properties props;
     //Dichiarazione Observable List per le mail in arrivo ed inviate
     private ObservableList<EMail> mailArrived= FXCollections.observableArrayList();
     private ObservableList<EMail> mailSent=FXCollections.observableArrayList();
