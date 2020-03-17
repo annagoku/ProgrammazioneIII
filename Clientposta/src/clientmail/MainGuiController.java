@@ -144,7 +144,23 @@ public class MainGuiController implements Initializable {
                 new DeleteThread(DeleteThread.Selection.ARRIVED, model, selectedEmail).start();
             else
                 new DeleteThread(DeleteThread.Selection.SENT, model, selectedEmail).start();
+
+            hideMailDetails();
         }
+
+
+    }
+
+    public void hideMailDetails(){
+        panelEmailDetail.setVisible(false);
+        replayMail.setDisable(true);
+        replayAllMail.setDisable(true);
+        forwardMail.setDisable(true);
+        deleteMail.setDisable(true);
+        valueSender.setText("");
+        valueRecipients.setText("");
+        valueObject.setText("");
+        valueTextMail.setText("");
     }
 
     //Selezione mail su click su riga arrived/sent

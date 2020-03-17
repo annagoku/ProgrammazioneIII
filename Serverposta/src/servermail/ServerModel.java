@@ -43,7 +43,7 @@ public class ServerModel {
     Map<String, FileHandler> sentFileHandler=new HashMap<String, FileHandler>();
 
 
-    //Generazione ID mail univoci in mutua esclusione
+    //Classe che rende atomica l'operazione di incremento assicurando la mutua esclusione
     private AtomicInteger countId;
 
 
